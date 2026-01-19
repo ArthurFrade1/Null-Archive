@@ -1,4 +1,4 @@
-package com.arthurfrade.nullarchive;
+package com.arthurfrade.nullarchive.repository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
