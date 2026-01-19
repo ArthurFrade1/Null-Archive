@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>POST Teste</title>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<form id="registerForm">
+  <label>Email:</label>
+  <input type="text" name="email" required>
+
+  <label>Senha:</label>
+  <input type="password" name="password" required>
+
+  <button type="submit">Login</button>
+</form>
+
+<a href="cadastroUsuário.html">Cadastre-se</a>
+
+</body>
+</html>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault(); // 🚫 impede o submit padrão
+
+    const form = e.target;
+
+    const data = {
+        email: form.email.value,
+        password: form.password.value
+    };
+
+    const response = await fetch("http://localhost:8081/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+        window.location.href = "Home.html";
+    } else {
+        const text = await response.text();
+        alert("Erro: " + text);
+    }
+});
+</script>
+
