@@ -14,10 +14,10 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.io.IOException;
 import java.sql.SQLIntegrityConstraintViolationException;
 
-public class UsersHandler implements HttpHandler {
+public class EditorRegisterHandler implements HttpHandler {
     private final UserRepository repo;
 
-    public UsersHandler(UserRepository repo) {
+    public EditorRegisterHandler(UserRepository repo) {
         this.repo = repo;
     }
 
@@ -25,28 +25,27 @@ public class UsersHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         CorsUtil.addCorsHeaders(exchange);
         if (CorsUtil.handlePreflight(exchange)) return;
-
         if (!HttpUtil.requireMethod(exchange, "POST")) return;
         if (!HttpUtil.requireJson(exchange)) return;
 
         RegisterRequest req;
         try {
-            req = HttpUtil.readJson(exchange, RegisterRequest.class);
+            req = HttpUtil.readJson(exchange, RegisterRequest.class);   //Lê dados JSON
         } catch (Exception e) {
             HttpUtil.sendJson(exchange, 400, new ApiError("Invalid JSON"));
             return;
         }
 
-        String err = Validation.validateRegister(req);
+        String err = Validation.validateRegister(req);                         //Valida
         if (err != null) {
             HttpUtil.sendJson(exchange, 400, new ApiError(err));
             return;
         }
 
-        String passwordHash = BCrypt.hashpw(req.password, BCrypt.gensalt());
+        String passwordHash = BCrypt.hashpw(req.password, BCrypt.gensalt());   //Gera Hash da senha
 
         try {
-            repo.createUser(req.username, passwordHash, req.role, req.email);
+            repo.createEditor(req.username, passwordHash, req.email);  //Cria usuário no banco
         } catch (SQLIntegrityConstraintViolationException e) {
             HttpUtil.sendJson(exchange, 409, new ApiError("Usuário ou email já existe"));
             return;

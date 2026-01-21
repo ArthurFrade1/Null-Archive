@@ -2,18 +2,18 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>POST Teste</title>
+    <title>Login</title>
 </head>
 <body>
 
 <h2>Login</h2>
 
 <form id="registerForm">
-  <label>Email:</label>
-  <input type="text" name="email" required>
+  <label for="text">Email:</label>
+  <input id="text" type="text" name="email" required>
 
-  <label>Senha:</label>
-  <input type="password" name="password" required>
+  <label for="password">Senha:</label>
+  <input id="password" type="password" name="password" required>
 
   <button type="submit">Login</button>
 </form>
@@ -21,8 +21,6 @@
 <a href="cadastroUsuário.html">Cadastre-se</a>
 
 </body>
-</html>
-
 <script>
 document.getElementById("registerForm").addEventListener("submit", async function (e) {
     e.preventDefault(); // 🚫 impede o submit padrão
@@ -34,11 +32,12 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         password: form.password.value
     };
 
-    const response = await fetch("http://localhost:8081/auth/login", {
+    const response = await fetch("http://127.0.0.1:8081/editor/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
+        credentials: "include",   // ← AQUI
         body: JSON.stringify(data)
     });
 
@@ -50,4 +49,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     }
 });
 </script>
+</html>
+
 

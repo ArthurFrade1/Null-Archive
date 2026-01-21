@@ -2,24 +2,23 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>POST Teste</title>
+    <title>Cadastro</title>
 </head>
 <body>
+
+<a href="loginUsuario.html">Login</a>
 
 <h2>Cadastre-se</h2>
 
 <form id="registerForm">
-  <label>Nome:</label>
-  <input type="text" name="username" required>
+  <label for="username">Nome:</label>
+  <input id="username" type="text" name="username" required>
 
-  <label>Senha:</label>
-  <input type="password" name="password" required>
+  <label for="password" >Senha:</label>
+  <input id="password" type="password" name="password" required>
 
-  <label>Função:</label>
-  <input type="text" name="role" required>
-
-  <label>E-mail:</label>
-  <input type="email" name="email" required>
+  <label for="email" >E-mail:</label>
+  <input id="email" type="email" name="email" required>
 
   <button type="submit">Cadastrar</button>
 </form>
@@ -37,11 +36,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     const data = {
         username: form.username.value,
         password: form.password.value,
-        role: form.role.value,
         email: form.email.value
     };
 
-    const response = await fetch("http://localhost:8081/users", {
+    const response = await fetch("http://localhost:8081/editor/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -51,6 +49,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     if (response.ok) {
         alert("Usuário criado com sucesso!");
+        window.location.href = "loginUsuario.html";
     } else {
         const text = await response.text();
         alert("Erro: " + text);

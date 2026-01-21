@@ -1,9 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>POST Teste</title>
+  <meta charset="UTF-8">
+  <title>Home</title>
 </head>
 <body>
-    <h1>Home</h1>
+
+  <h1>Home</h1>
+
+  <!-- Visível apenas para NÃO autenticados -->
+  <div id="nonaccount-actions">
+    <p>Deseja compartilhar um livro?</p>
+    <a href="loginUsuario.html">Entre na sua conta</a><br>
+    <a href="cadastroUsuario.html">Crie sua conta</a>
+  </div>
+
+  <!-- Visível apenas para autenticados -->
+  <div id="account-actions" style="display:none;">
+    <p>Bem-vindo, <span id="name"></span></p>
+    <a href="novoLivro.html">Adicionar novo livro</a>
+  </div>
+
 </body>
+
+<footer>
+  <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro.
+Não utilizamos cookies de rastreamento ou publicidade.”</p>
+</footer>
+
+
+<script>
+async function loadUserToken() {
+  const res = await fetch("http://127.0.0.1:8081/user/token", {
+    method: "POST",
+    credentials: "include"
+  });
+}
+async function loadContext() {
+  const res = await fetch("http://127.0.0.1:8081/editor/data", {
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    showNonaccount();
+    return;
+  }
+
+  const data = await res.json();
+
+  if (data.authenticated === true) {
+    showAccount(data);
+  } else {
+    showNonaccount();
+  }
+}
+
+function showNonaccount() {
+  document.getElementById("nonaccount-actions").style.display = "block";
+  document.getElementById("account-actions").style.display = "none";
+}
+
+function showAccount(data) {
+  document.getElementById("nonaccount-actions").style.display = "none";
+  document.getElementById("account-actions").style.display = "block";
+  document.getElementById("name").textContent = data.username;
+}
+
+loadUserToken();
+loadContext();
+</script>
+</html>
+

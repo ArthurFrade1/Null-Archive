@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Home</title>
+</head>
+<body>
+
+  <h1>Home</h1>
+
+  <!-- Visível apenas para NÃO autenticados -->
+  <div id="nonaccount-actions">
+    <p>Deseja compartilhar um livro?</p>
+    <a href="loginUsuario.html">Entre na sua conta</a><br>
+    <a href="cadastroUsuario.html">Crie sua conta</a>
+  </div>
+
+  <!-- Visível apenas para autenticados -->
+  <div id="account-actions" style="display:none;">
+    <p>Bem-vindo, <span id="name"></span></p>
+    <a href="novoLivro.html">Adicionar novo livro</a>
+  </div>
+
+</body>
+
+<footer>
+  <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro.
+Não utilizamos cookies de rastreamento ou publicidade.”</p>
+</footer>
+
+
+<script>
+
+</script>
+</html>
+

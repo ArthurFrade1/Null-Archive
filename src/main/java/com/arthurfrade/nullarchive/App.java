@@ -1,7 +1,9 @@
 package com.arthurfrade.nullarchive;
 
-import com.arthurfrade.nullarchive.controller.LoginHandler;
-import com.arthurfrade.nullarchive.controller.UsersHandler;
+import com.arthurfrade.nullarchive.controller.EditorLoginHandler;
+import com.arthurfrade.nullarchive.controller.EditorRegisterHandler;
+import com.arthurfrade.nullarchive.controller.UserTokenHandler;
+import com.arthurfrade.nullarchive.controller.EditorDataHandler;
 import com.arthurfrade.nullarchive.repository.UserRepository;
 import com.sun.net.httpserver.HttpServer;
 
@@ -15,8 +17,10 @@ public class App {
 
         UserRepository repo = new UserRepository();
 
-        server.createContext("/users", new UsersHandler(repo));
-        server.createContext("/auth/login", new LoginHandler(repo));
+        server.createContext("/editor/register",  new EditorRegisterHandler(repo));  //POST /auth/register
+        server.createContext("/editor/login",     new EditorLoginHandler(repo));     //POST /auth/login
+        server.createContext("/editor/data",      new EditorDataHandler(repo));            //GET /me
+        server.createContext("/user/token",       new UserTokenHandler(repo));       //POST /visitor/init
 
         server.setExecutor(null);
         server.start();
