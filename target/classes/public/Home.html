@@ -19,7 +19,9 @@
   <div id="account-actions" style="display:none;">
     <p>Bem-vindo, <span id="name"></span></p>
     <a href="novoLivro.html">Adicionar novo livro</a>
+    <button id="logout">Encerrar sessão</button>
   </div>
+
 
 </body>
 
@@ -68,6 +70,23 @@ function showAccount(data) {
 
 loadUserToken();
 loadContext();
+
+document.getElementById("logout").addEventListener("click", async function (e) {
+    e.preventDefault(); // 🚫 impede o submit padrão
+
+    const response = await fetch("http://127.0.0.1:8081/editor/logout", {
+        method: "POST",
+        credentials: "include",
+
+    });
+
+    if (response.ok) {
+        window.location.href = "loginUsuario.html";
+    } else {
+        const text = await response.text();
+        alert("Erro: " + text);
+    }
+});
 </script>
 </html>
 

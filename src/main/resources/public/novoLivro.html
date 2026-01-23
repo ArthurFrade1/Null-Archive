@@ -1,36 +1,254 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Novo Livro</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
+    h1 { margin-bottom: 8px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    form { margin-top: 18px; display: grid; gap: 14px; }
+    .row { display: grid; gap: 8px; }
+    label { font-weight: 600; }
+    input, textarea, select { padding: 10px; font-size: 1rem; }
+    textarea { min-height: 120px; resize: vertical; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .actions { display: flex; gap: 12px; align-items: center; }
+    button { padding: 10px 14px; font-size: 1rem; cursor: pointer; }
+    .danger { background: #fff; border: 1px solid #c00; color: #c00; }
+    .ok { background: #0a7; border: 1px solid #0a7; color: #fff; }
+    .card { border: 1px solid #ddd; padding: 14px; border-radius: 8px; }
+    .hint { font-size: 0.9rem; color: #444; }
+    .status { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+  <link rel="stylesheet" href="novoLivro.css">
 </head>
 <body>
+  <a href="Home.html">voltar</a>
+  <h1>Adicionar livro</h1>
+  <p class="muted">Envie metadados e o arquivo (PDF/EPUB/MOBI/TXT/OUTRO).</p>
 
-  <h1>Home</h1>
+  <div class="card">
+    <form id="bookForm">
 
-  <!-- Visível apenas para NÃO autenticados -->
-  <div id="nonaccount-actions">
-    <p>Deseja compartilhar um livro?</p>
-    <a href="loginUsuario.html">Entre na sua conta</a><br>
-    <a href="cadastroUsuario.html">Crie sua conta</a>
+      <div class="row">
+        <label for="title">Título *</label>
+        <input id="title" name="title" type="text" maxlength="255" required />
+      </div>
+
+      <div class="grid2">
+        <div class="row">
+          <label for="author_name">Autor</label>
+          <input id="author_name" name="author_name" type="text" maxlength="255" />
+        </div>
+
+        <div class="row">
+          <label for="published_year">Ano (ex: 2008)</label>
+          <input id="published_year" name="published_year" type="number" min="0" max="3000" />
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description"></textarea>
+      </div>
+
+      <div class="grid3">
+        <div class="row">
+          <label for="language_code">Idioma (ex: pt-BR, en)</label>
+          <input id="language_code" name="language_code" type="text" maxlength="5" placeholder="pt-BR" />
+          <div class="hint">No seu schema é CHAR(5). Exemplos: <code>pt-BR</code>, <code>en</code>.</div>
+        </div>
+
+        <div class="row">
+          <label for="license">Licença *</label>
+          <select id="license" name="license" required>
+            <option value="UNKNOWN">UNKNOWN</option>
+            <option value="PUBLIC_DOMAIN">PUBLIC_DOMAIN</option>
+            <option value="CC0">CC0</option>
+            <option value="CC_BY">CC_BY</option>
+            <option value="CC_BY_SA">CC_BY_SA</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label for="source_url">Fonte (URL)</label>
+          <input id="source_url" name="source_url" type="url" maxlength="2048" placeholder="https://..." />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin: 0 0 10px;">Arquivo do livro *</h3>
+
+        <div class="grid2">
+          <div class="row">
+            <label for="file_kind">Tipo *</label>
+            <select id="file_kind" name="file_kind" required>
+              <option value="PDF">PDF</option>
+              <option value="EPUB">EPUB</option>
+              <option value="MOBI">MOBI</option>
+              <option value="TXT">TXT</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <label for="book_file">Arquivo *</label>
+            <input id="book_file" name="book_file" type="file" required />
+            <div class="hint">O backend deve salvar o arquivo no disco e registrar em <code>book_files</code>.</div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="actions">
+        <button class="ok" type="submit">Enviar</button>
+        <button class="danger" type="button" id="resetBtn">Limpar</button>
+      </div>
+
+      <div class="card">
+        <div class="muted">Status</div>
+        <div id="status" class="status"></div>
+      </div>
+
+    </form>
   </div>
+  <label>Selecione as Tags:</label>
+  <div id="container-tags" class="tag-wrapper">
+      </div>
 
-  <!-- Visível apenas para autenticados -->
-  <div id="account-actions" style="display:none;">
-    <p>Bem-vindo, <span id="name"></span></p>
-    <a href="novoLivro.html">Adicionar novo livro</a>
-  </div>
-
-</body>
-
-<footer>
-  <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro.
-Não utilizamos cookies de rastreamento ou publicidade.”</p>
-</footer>
+  <input type="hidden" name="tags_selecionadas" id="tags-input">
 
 
 <script>
+  
+  const form = document.getElementById("bookForm");
+  const statusEl = document.getElementById("status");
+  const resetBtn = document.getElementById("resetBtn");
+  const container = document.getElementById('container-tags');
+  let tagsSelecionadas = []; // Array para guardar os IDs
 
+  async function loadContext() {
+    const res = await fetch("http://127.0.0.1:8081/editor/tags", {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      return;
+    }
+
+
+    const data = await res.json();
+    console.log("Conteúdo recebido do back-end:", data); // <--- ADICIONE ISSO
+
+
+    // Limpa o container antes de carregar (caso a função seja chamada mais de uma vez)
+      //container.innerHTML = '';
+
+      // --- O PULO DO GATO ESTÁ AQUI ---
+      // Percorremos cada item (tag) dentro do array 'data'
+      data.forEach(tag => {
+          // 2. Cria o botão dinamicamente para CADA tag
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.innerText = tag.nome;
+          btn.classList.add('btn-tag');
+
+          // 3. Lógica do Clique
+          btn.addEventListener('click', () => {
+              toggleTag(btn, tag.id);
+          });
+
+          // Adiciona o botão criado ao container na tela
+          container.appendChild(btn);
+      });
+
+
+  }
+  loadContext()
+
+function toggleTag(elemento, id) {
+    if (tagsSelecionadas.includes(id)) {
+        // Se já está no array, remove (desmarcar)
+        tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
+        elemento.classList.remove('selecionado');
+    } else {
+        // Se não está, adiciona (marcar)
+        tagsSelecionadas.push(id);
+        elemento.classList.add('selecionado');
+    }
+    
+    // Atualiza o valor que vai pro back (opcional)
+    console.log("IDs para enviar:", tagsSelecionadas);
+}
+
+
+  resetBtn.addEventListener("click", () => {
+    form.reset();
+    statusEl.textContent = "";
+  });
+
+  function setStatus(msg) {
+    statusEl.textContent = msg;
+  }
+
+
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const fileInput = document.getElementById("book_file");
+    const file = fileInput.files[0];
+    if (!file) {
+      setStatus("Selecione um arquivo.");
+      return;
+    }
+
+
+
+    const payload = {
+      title: document.getElementById("title").value,
+      author_name: document.getElementById("author_name").value || null,
+      description: document.getElementById("description").value || null,
+      language_code: document.getElementById("language_code").value || null,
+      published_year: document.getElementById("published_year").value ? Number(document.getElementById("published_year").value) : null,
+      license: document.getElementById("license").value,
+      source_url: document.getElementById("source_url").value || null,
+      file_kind: document.getElementById("file_kind").value,
+      tags: tagsSelecionadas
+    };
+
+    const fd = new FormData();
+    fd.append("meta", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+    fd.append("file", file);
+
+    setStatus("Enviando...");
+
+    try {
+      const res = await fetch("http://127.0.0.1:8081/editor/book", {
+        method: "POST",
+        credentials: "include",
+        body: fd
+      });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        setStatus("Erro (" + res.status + "):\n" + text);
+        return;
+      }
+
+      setStatus("OK (" + res.status + "):\n" + text);
+      // opcional: redirecionar ou limpar
+      // window.location.href = "Home.html";
+    } catch (err) {
+      setStatus("Falha de rede:\n" + String(err));
+    }
+  });
 </script>
-</html>
 
+</body>
+</html>
