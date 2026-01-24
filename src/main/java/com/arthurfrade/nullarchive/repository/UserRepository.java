@@ -48,8 +48,8 @@ public class UserRepository{
         }
     }
     
-    public void createBookFiles(int book_id,String file_kind,String storage_path,String original_filename,String mime_type, long size_bytes){
-        String sql = "INSERT INTO book_files ( book_id, file_kind, storage_path, original_filename, mime_type, size_bytes,created_at) VALUES ( ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+    public void createBookFiles(int book_id,String file_kind,String storage_path_file, String storage_path_image, String original_filename,String mime_type, long size_bytes){
+        String sql = "INSERT INTO book_files ( book_id, file_kind, storage_path_file, storage_path_image, original_filename, mime_type, size_bytes,created_at) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
          // 2) Tenta conectar
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -57,10 +57,11 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
             // 3) Define os valores
             stmt.setInt(1, book_id);
             stmt.setString(2, file_kind);
-            stmt.setString(3, storage_path);
-            stmt.setString(4, original_filename);
-            stmt.setString(5, mime_type);
-            stmt.setLong(6, size_bytes);
+            stmt.setString(3, storage_path_file);
+            stmt.setString(4, storage_path_image);
+            stmt.setString(5, original_filename);
+            stmt.setString(6, mime_type);
+            stmt.setLong(7, size_bytes);
 
             // 4) Executa
             int rows = stmt.executeUpdate();

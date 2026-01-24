@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Home</title>
+    <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
 
@@ -21,6 +22,9 @@
     <a href="novoLivro.html">Adicionar novo livro</a>
     <button id="logout">Encerrar sessão</button>
   </div>
+
+  <main id="livros-grid" class="grid-container">
+  </main>
 
 
 </body>
@@ -42,14 +46,14 @@ async function loadContext() {
   const res = await fetch("http://127.0.0.1:8081/editor/data", {
     credentials: "include"
   });
-
+  
   if (!res.ok) {
     showNonaccount();
     return;
   }
-
+  
   const data = await res.json();
-
+  
   if (data.authenticated === true) {
     showAccount(data);
   } else {
@@ -72,21 +76,23 @@ loadUserToken();
 loadContext();
 
 document.getElementById("logout").addEventListener("click", async function (e) {
-    e.preventDefault(); // 🚫 impede o submit padrão
-
-    const response = await fetch("http://127.0.0.1:8081/editor/logout", {
-        method: "POST",
-        credentials: "include",
-
-    });
-
-    if (response.ok) {
-        window.location.href = "loginUsuario.html";
-    } else {
-        const text = await response.text();
-        alert("Erro: " + text);
-    }
+  e.preventDefault(); // 🚫 impede o submit padrão
+  
+  const response = await fetch("http://127.0.0.1:8081/editor/logout", {
+    method: "POST",
+    credentials: "include",
+    
+  });
+  
+  if (response.ok) {
+    window.location.href = "loginUsuario.html";
+  } else {
+    const text = await response.text();
+    alert("Erro: " + text);
+  }
 });
+
+
 </script>
 </html>
 

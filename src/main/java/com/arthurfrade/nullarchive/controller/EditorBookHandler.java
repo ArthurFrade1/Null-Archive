@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,11 +24,17 @@ public class EditorBookHandler implements HttpHandler {
     private final UserRepository repo;
     private static final ObjectMapper mapper = new ObjectMapper();
 
-private static final Path UPLOAD_DIR = Paths.get(
+private static final Path UPLOAD_FILE = Paths.get(
     System.getProperty("user.home"),
     "Desktop",
     "nullarchive_uploads",
     "books"
+);
+private static final Path UPLOAD_IMAGE = Paths.get(
+    System.getProperty("user.home"),
+    "Desktop",
+    "nullarchive_uploads",
+    "images"
 );
 
 
@@ -77,9 +82,10 @@ private static final Path UPLOAD_DIR = Paths.get(
 
         MultipartUtil.Part metaPart = parts.get("meta");
         MultipartUtil.Part filePart = parts.get("file");
+        MultipartUtil.Part imagePart = parts.get("image");
 
-        if (metaPart == null || filePart == null) {
-            HttpUtil.sendJson(exchange, 400, new ApiError("Missing meta or file"));
+        if (metaPart == null || filePart == null || imagePart == null) {
+            HttpUtil.sendJson(exchange, 400, new ApiError("Missing meta, file or image"));
             return;
         }
 
@@ -92,7 +98,8 @@ private static final Path UPLOAD_DIR = Paths.get(
         }
 
         try {
-            Files.createDirectories(UPLOAD_DIR);
+            Files.createDirectories(UPLOAD_FILE);
+            Files.createDirectories(UPLOAD_IMAGE);
         } catch (Exception e) {
             e.printStackTrace();
             HttpUtil.sendJson(exchange, 500, new ApiError("Could not create upload directory"));
@@ -100,15 +107,29 @@ private static final Path UPLOAD_DIR = Paths.get(
         }
 
         String ext = guessExtension(meta.file_kind, filePart.filename);
+        //File
         String safeName = UUID.randomUUID().toString().replace("-", "") + ext;
 
-        Path savedPath = UPLOAD_DIR.resolve(safeName).normalize();
+        Path savedPathFile = UPLOAD_FILE.resolve(safeName).normalize();
 
         try {
-            Files.write(savedPath, filePart.data);
+            Files.write(savedPathFile, filePart.data);
         } catch (Exception e) {
             e.printStackTrace();
             HttpUtil.sendJson(exchange, 500, new ApiError("Could not save file"));
+            return;
+        }
+
+        //Image
+        safeName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+        Path savedPathImage = UPLOAD_IMAGE.resolve(safeName).normalize();
+
+        try {
+            Files.write(savedPathImage, imagePart.data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            HttpUtil.sendJson(exchange, 500, new ApiError("Could not save image"));
             return;
         }
 
@@ -116,8 +137,9 @@ private static final Path UPLOAD_DIR = Paths.get(
         String fileKind = meta.file_kind; 
 
         // 2. storage_path (Caminho relativo para salvar no banco)
-        // Dica: Recomendo salvar o caminho relativo ao UPLOAD_DIR para facilitar se mudar o servidor de lugar
-        String storagePath ="C:\\Users\\arthu\\Desktop\\nullarchive_uploads\\books\\" + savedPath.getFileName().toString();
+        // Dica: Recomendo salvar o caminho relativo ao UPLOAD_FILE para facilitar se mudar o servidor de lugar
+        String storagePathFile ="C:\\Users\\arthu\\Desktop\\nullarchive_uploads\\books\\" + savedPathFile.getFileName().toString();
+        String storagePathImage ="C:\\Users\\arthu\\Desktop\\nullarchive_uploads\\images\\" + savedPathImage.getFileName().toString();
 
         // 3. original_filename (Nome original que o usuário subiu)
         String originalFilename = filePart.filename;
@@ -135,7 +157,7 @@ private static final Path UPLOAD_DIR = Paths.get(
             //Cria ligações entre as tags e o livro
             repo.createBookTag(idBook, meta.tags);
 
-            repo.createBookFiles(idBook, fileKind, storagePath, originalFilename, mimeType, sizeBytes);
+            repo.createBookFiles(idBook, fileKind, storagePathFile, storagePathImage, originalFilename, mimeType, sizeBytes);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,7 +168,7 @@ private static final Path UPLOAD_DIR = Paths.get(
         String msg = "Recebido: title=" + meta.title +
                      ", file=" + (filePart.filename == null ? "(no name)" : filePart.filename) +
                      ", bytes=" + filePart.data.length +
-                     ", savedAs=" + savedPath.toString();
+                     ", savedAs=" + savedPathFile.toString();
 
 
 

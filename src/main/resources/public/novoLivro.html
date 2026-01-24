@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Novo Livro</title>
+  <link rel="stylesheet" href="estilo.css">
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
     h1 { margin-bottom: 8px; }
@@ -97,6 +98,8 @@
           <div class="row">
             <label for="book_file">Arquivo *</label>
             <input id="book_file" name="book_file" type="file" required />
+            <label for="image_book">Imagem do Arquivo *</label>
+            <input id="image_book" name="image_book" type="file" required />
             <div class="hint">O backend deve salvar o arquivo no disco e registrar em <code>book_files</code>.</div>
           </div>
         </div>
@@ -201,11 +204,18 @@ function toggleTag(elemento, id) {
     e.preventDefault();
 
     const fileInput = document.getElementById("book_file");
-    const file = fileInput.files[0];
-    if (!file) {
+    const fileBook = fileInput.files[0];
+    if (!fileBook) {
       setStatus("Selecione um arquivo.");
       return;
     }
+    const imageInput = document.getElementById("image_book");
+    const fileImage = imageInput.files[0];
+    if (!fileImage) {
+      setStatus("Selecione uma imagem.");
+      return;
+    }
+    
 
 
 
@@ -223,7 +233,8 @@ function toggleTag(elemento, id) {
 
     const fd = new FormData();
     fd.append("meta", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-    fd.append("file", file);
+    fd.append("file", fileBook);
+    fd.append("image", fileImage);
 
     setStatus("Enviando...");
 
