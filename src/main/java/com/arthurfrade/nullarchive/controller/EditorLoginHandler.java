@@ -51,7 +51,7 @@ public class EditorLoginHandler implements HttpHandler {
             auth = repo.getEditorCredentials(req.email);                                   //Obtêm id e senha
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
@@ -75,7 +75,7 @@ public class EditorLoginHandler implements HttpHandler {
             repo.createEditorSession(auth.id, token, ip, userAgent);                            //Cria sessäo no banco
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 

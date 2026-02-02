@@ -2,20 +2,14 @@ package com.arthurfrade.nullarchive.controller;
 
 import com.arthurfrade.nullarchive.dto.ApiError;
 import com.arthurfrade.nullarchive.dto.ApiResponse;
-import com.arthurfrade.nullarchive.dto.AuthenticatedUserRequest;
-import com.arthurfrade.nullarchive.dto.LoginRequest;
-import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.repository.UserRepository;
 import com.arthurfrade.nullarchive.util.CorsUtil;
 import com.arthurfrade.nullarchive.util.HttpUtil;
 import com.arthurfrade.nullarchive.util.TokenUtil;
-import com.arthurfrade.nullarchive.util.Validation;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
-import java.util.Map;
 
 
 public class EditorLogoutHandler implements HttpHandler {
@@ -39,7 +33,7 @@ public class EditorLogoutHandler implements HttpHandler {
             repo.logoutAccountSession(token);                            //Cria sessäo no banco
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 

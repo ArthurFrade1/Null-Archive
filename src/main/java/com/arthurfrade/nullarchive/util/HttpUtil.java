@@ -5,7 +5,10 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HttpUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -51,4 +54,24 @@ public class HttpUtil {
             os.write(bytes);
         }
     }
+    public static Map<String, String> parseQueryParams(HttpExchange exchange) {
+    String query = exchange.getRequestURI().getRawQuery(); // getRawQuery é mais seguro
+    Map<String, String> result = new HashMap<>();
+    
+    if (query == null || query.isEmpty()) {
+        return result;
+    }
+
+    for (String param : query.split("&")) {
+        String[] entry = param.split("=");
+        if (entry.length > 1) {
+            // A forma correta: StandardCharsets.UTF_8
+            String value = URLDecoder.decode(entry[1], StandardCharsets.UTF_8);
+            result.put(entry[0], value);
+        } else {
+            result.put(entry[0], "");
+        }
+    }
+    return result;
+}
 }

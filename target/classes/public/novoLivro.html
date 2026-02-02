@@ -119,7 +119,7 @@
 
     </form>
   </div>
-  <label>Selecione as Tags:</label>
+  <label>Selecione entre 1 e 3 tags:</label>
   <div id="container-tags" class="tag-wrapper">
       </div>
 
@@ -132,9 +132,10 @@
   const statusEl = document.getElementById("status");
   const resetBtn = document.getElementById("resetBtn");
   const container = document.getElementById('container-tags');
+  let contaTags =0;
   let tagsSelecionadas = []; // Array para guardar os IDs
 
-  async function loadContext() {
+  async function loadTags() {
     const res = await fetch("http://127.0.0.1:8081/editor/tags", {
       credentials: "include"
     });
@@ -145,8 +146,6 @@
 
 
     const data = await res.json();
-    console.log("Conteúdo recebido do back-end:", data); // <--- ADICIONE ISSO
-
 
     // Limpa o container antes de carregar (caso a função seja chamada mais de uma vez)
       //container.innerHTML = '';
@@ -171,21 +170,23 @@
 
 
   }
-  loadContext()
+  loadTags()
 
 function toggleTag(elemento, id) {
     if (tagsSelecionadas.includes(id)) {
         // Se já está no array, remove (desmarcar)
         tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
         elemento.classList.remove('selecionado');
+        contaTags--;
     } else {
-        // Se não está, adiciona (marcar)
-        tagsSelecionadas.push(id);
-        elemento.classList.add('selecionado');
+        if(contaTags<3){
+          // Se não está, adiciona (marcar)
+          tagsSelecionadas.push(id);
+          elemento.classList.add('selecionado');
+          contaTags++;
+        }
     }
-    
-    // Atualiza o valor que vai pro back (opcional)
-    console.log("IDs para enviar:", tagsSelecionadas);
+
 }
 
 

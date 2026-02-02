@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <title>Home</title>
     <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="novoLivro.css">
 </head>
 <body>
 
   <h1>Home</h1>
 
   <!-- Visível apenas para NÃO autenticados -->
-  <div id="nonaccount-actions">
+  <div id="user-actions">
     <p>Deseja compartilhar um livro?</p>
     <a href="loginUsuario.html">Entre na sua conta</a><br>
-    <a href="cadastroUsuario.html">Crie sua conta</a>
+    <a href="cadastroUsuário.html">Crie sua conta</a>
   </div>
 
   <!-- Visível apenas para autenticados -->
@@ -21,6 +22,22 @@
     <p>Bem-vindo, <span id="name"></span></p>
     <a href="novoLivro.html">Adicionar novo livro</a>
     <button id="logout">Encerrar sessão</button>
+  </div>
+
+  <div id="admin-actions" style="display:none;">
+    <a href="gerenciarLivros.html">Gerenciar Livros</a>
+  </div>
+
+  <div class="search-section">
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="BUSCAR POR TÍTULO OU AUTOR..." autocomplete="off">
+        <button id="btn-search" class="btn-action">EXECUTAR_QUERY</button>
+    </div>
+
+    <div class="filter-tags">
+        <span class="tech-label">Filtrar por Tags:</span>
+        <div id="container-tags" class="tag-wrapper"></div>
+    </div>
   </div>
 
   <main id="livros-grid" class="grid-container">
@@ -36,63 +53,201 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
 
 
 <script>
-async function loadUserToken() {
-  const res = await fetch("http://127.0.0.1:8081/user/token", {
-    method: "POST",
-    credentials: "include"
-  });
-}
-async function loadContext() {
-  const res = await fetch("http://127.0.0.1:8081/editor/data", {
-    credentials: "include"
-  });
-  
-  if (!res.ok) {
-    showNonaccount();
-    return;
-  }
-  
-  const data = await res.json();
-  
-  if (data.authenticated === true) {
-    showAccount(data);
-  } else {
-    showNonaccount();
-  }
-}
 
-function showNonaccount() {
-  document.getElementById("nonaccount-actions").style.display = "block";
-  document.getElementById("account-actions").style.display = "none";
-}
-
-function showAccount(data) {
-  document.getElementById("nonaccount-actions").style.display = "none";
-  document.getElementById("account-actions").style.display = "block";
-  document.getElementById("name").textContent = data.username;
-}
-
-loadUserToken();
-loadContext();
-
-document.getElementById("logout").addEventListener("click", async function (e) {
-  e.preventDefault(); // 🚫 impede o submit padrão
-  
-  const response = await fetch("http://127.0.0.1:8081/editor/logout", {
-    method: "POST",
-    credentials: "include",
+  let tagsSelecionadas = [];
+  async function loadTags() {
+    const res = await fetch("http://127.0.0.1:8081/editor/tags", {
+      credentials: "include"
+    });
     
+    if (!res.ok) {
+      return;
+    }
+    
+    const container = document.getElementById("container-tags");
+
+    const data = await res.json();
+
+    // Limpa o container antes de carregar (caso a função seja chamada mais de uma vez)
+      //container.innerHTML = '';
+
+      // --- O PULO DO GATO ESTÁ AQUI ---
+      // Percorremos cada item (tag) dentro do array 'data'
+      data.forEach(tag => {
+          // 2. Cria o botão dinamicamente para CADA tag
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.innerText = tag.nome;
+          btn.classList.add('btn-tag');
+
+          // 3. Lógica do Clique
+          btn.addEventListener('click', () => {
+              toggleTag(btn, tag.id);
+          });
+
+          // Adiciona o botão criado ao container na tela
+          container.appendChild(btn);
+      });
+      
+      
+    }
+    
+    async function atualizaBooks(tagsSelecionadas){
+      const grid = document.getElementById('livros-grid');
+
+      const tagsString = tagsSelecionadas.join(',');
+
+      const res = await fetch(`http://127.0.0.1:8081/search/tags?tags=${encodeURIComponent(tagsString)}`);
+      
+      const data = await res.json();
+
+      grid.innerHTML = '';
+
+      data.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+    
+        const coverUrl = book.storage_path_image 
+            ? `http://127.0.0.1:8081/user/image/${book.storage_path_image}` 
+            : 'placeholder.png';
+    
+            // Gerar o HTML das tags dinamicamente
+          // Pegamos apenas as 3 primeiras (slice) caso o back mande mais por erro
+    
+          let tagsArray = [];
+    
+          if (book.tags) {
+              if (Array.isArray(book.tags)) {
+                  // Se já for um array (veio tratado do Java)
+                  tagsArray = book.tags;
+              } else if (typeof book.tags === 'string') {
+                  // Se veio como string "terror,fantasia", transforma em array
+                  tagsArray = book.tags.split(',');
+              }
+          }
+    
+          const tagsHtml = tagsArray
+              .slice(0, 3) 
+              .map(tag => `<span class="tag-pill">${tag.trim()}</span>`)
+              .join('');
+    
+              
+        card.innerHTML = `
+            <div class="card-cover">
+                <img src="${coverUrl}" alt="Capa de ${book.title}">
+            </div>
+            <div class="card-info">
+                <h3 class="book-title">${book.title}</h3>
+                <span class="book-author">${book.author_name || 'Autor desconhecido'}</span>
+                
+                <div class="card-tags">
+                    ${tagsHtml}
+                </div>
+            </div>
+        `;
+    
+        card.addEventListener('click', () => {
+            window.location.href = `visualizarLivro.html?id=${book.id}`;
+        });
+    
+        grid.appendChild(card);
+    });
+
+  }
+
+  async function toggleTag(elemento, id) {
+
+    if (tagsSelecionadas.includes(id)) {
+        // Se já está no array, remove (desmarcar)
+        tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
+        elemento.classList.remove('selecionado');
+
+        atualizaBooks(tagsSelecionadas);
+    } else {
+      // Se não está, adiciona (marcar)
+      if(tagsSelecionadas.length<3){
+        tagsSelecionadas.push(id);
+        elemento.classList.add('selecionado');
+
+        atualizaBooks(tagsSelecionadas);
+      }
+          
+    }
+
+  }
+
+  async function loadUserToken() {
+    const res = await fetch("http://127.0.0.1:8081/user/token", {
+      method: "POST",
+      credentials: "include"
+    });
+  }
+  async function loadData() {
+    const res = await fetch("http://127.0.0.1:8081/editor/data", {
+      credentials: "include"
+    });
+    
+    if (!res.ok) {
+      showUser();
+      return;
+    }
+    
+    const data = await res.json();
+    
+    
+    if (data.authenticated === true) {
+      showEditor(data);
+      if(data.role === "ADMIN"){
+        showAdmin();
+      }
+    } else {
+      showUser();
+    }
+  }
+
+  function showUser() {
+    document.getElementById("user-actions").style.display = "block";
+    document.getElementById("account-actions").style.display = "none";
+    document.getElementById("admin-actions").style.display = "none";
+  }
+
+  function showEditor(data) {
+    document.getElementById("user-actions").style.display = "none";
+    document.getElementById("account-actions").style.display = "block";
+    document.getElementById("admin-actions").style.display = "none";
+    document.getElementById("name").textContent = data.username;
+  }
+
+  function showAdmin(){
+    document.getElementById("user-actions").style.display = "none";
+    document.getElementById("account-actions").style.display = "block";
+    document.getElementById("admin-actions").style.display = "block";
+    document.getElementById("name").textContent = "Admin";
+  }
+
+  
+  document.getElementById("logout").addEventListener("click", async function (e) {
+    e.preventDefault(); // 🚫 impede o submit padrão
+    
+    const res = await fetch("http://127.0.0.1:8081/editor/logout", {
+      method: "POST",
+      credentials: "include",
+      
+    });
+    
+    if (res.ok) {
+      window.location.href = "loginUsuario.html";
+    } else {
+      const text = await res.text();
+      alert("Erro: " + text);
+    }
   });
   
-  if (response.ok) {
-    window.location.href = "loginUsuario.html";
-  } else {
-    const text = await response.text();
-    alert("Erro: " + text);
-  }
-});
+  loadTags()
+  loadUserToken();
+  loadData();
+  atualizaBooks([]);
 
-
-</script>
+  </script>
 </html>
 

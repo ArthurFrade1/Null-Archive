@@ -35,7 +35,7 @@ public class UserTokenHandler implements HttpHandler {
 
         // Vê se o token existe
 
-        String token = getTokenValue(exchange, "user_token");
+        String token = TokenUtil.getCookieValue(exchange, "user_token");
 
         try{
             if (repo.userExists(token)) {
@@ -59,7 +59,7 @@ public class UserTokenHandler implements HttpHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
@@ -74,7 +74,7 @@ public class UserTokenHandler implements HttpHandler {
             repo.createUserSession(token);
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
@@ -90,19 +90,5 @@ public class UserTokenHandler implements HttpHandler {
             200,
             new ApiResponse("Token criado")
         );
-    }
-
-    private static String getTokenValue(HttpExchange exchange, String name) {
-        String cookieHeader = exchange.getRequestHeaders().getFirst("Cookie");
-        if (cookieHeader == null) return null;
-
-        String[] parts = cookieHeader.split(";");
-        for (String part : parts) {
-            String[] kv = part.trim().split("=", 2);
-            if (kv.length == 2 && kv[0].equals(name)) {
-                return kv[1];
-            }
-        }
-        return null;
     }
 }

@@ -5,6 +5,7 @@ import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.repository.UserRepository;
 import com.arthurfrade.nullarchive.util.CorsUtil;
 import com.arthurfrade.nullarchive.util.HttpUtil;
+import com.arthurfrade.nullarchive.util.TokenUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -26,7 +27,7 @@ public class EditorDataHandler implements HttpHandler {
         if (CorsUtil.handlePreflight(exchange)) return;
         if (!HttpUtil.requireMethod(exchange, "GET")) return;
 
-        String token = getCookieValue(exchange, "account_token");
+        String token = TokenUtil.getCookieValue(exchange, "account_token");
 
         
         UserSessionData userData;
@@ -38,25 +39,11 @@ public class EditorDataHandler implements HttpHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
         //Editor 
         HttpUtil.sendJson(exchange, 200, Map.of("authenticated", true, "username", userData.username, "role", userData.role));
-    }
-
-    private static String getCookieValue(HttpExchange exchange, String name) {
-        String cookieHeader = exchange.getRequestHeaders().getFirst("Cookie");
-        if (cookieHeader == null) return null;
-
-        String[] parts = cookieHeader.split(";");
-        for (String part : parts) {
-            String[] kv = part.trim().split("=", 2);
-            if (kv.length == 2 && kv[0].equals(name)) {
-                return kv[1];
-            }
-        }
-        return null;
     }
 }

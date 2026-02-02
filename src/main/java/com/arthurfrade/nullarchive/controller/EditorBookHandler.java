@@ -60,12 +60,12 @@ private static final Path UPLOAD_IMAGE = Paths.get(
         try {
             userData = repo.getEditorData(token);
             if(userData == null){
-                HttpUtil.sendJson(exchange, 400, Map.of("authenticated", false)); //Usuário 
+                HttpUtil.sendText(exchange, 400, "Usuário não autenticado"); //Usuário 
                 return;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
@@ -89,6 +89,7 @@ private static final Path UPLOAD_IMAGE = Paths.get(
             return;
         }
 
+        
         BookRequest meta;
         try {
             meta = mapper.readValue(metaPart.asStringUtf8(), BookRequest.class);
@@ -96,7 +97,11 @@ private static final Path UPLOAD_IMAGE = Paths.get(
             HttpUtil.sendJson(exchange, 400, new ApiError("Invalid meta JSON"));
             return;
         }
+        
+        if(meta.tags.length > 3)
+            HttpUtil.sendText(exchange, 400, "Mais de 3 tags selecionadas");
 
+        
         try {
             Files.createDirectories(UPLOAD_FILE);
             Files.createDirectories(UPLOAD_IMAGE);
@@ -106,12 +111,13 @@ private static final Path UPLOAD_IMAGE = Paths.get(
             return;
         }
 
-        String ext = guessExtension(meta.file_kind, filePart.filename);
         //File
+        String ext = guessExtension(meta.file_kind, filePart.filename);
+        
         String safeName = UUID.randomUUID().toString().replace("-", "") + ext;
-
+        
         Path savedPathFile = UPLOAD_FILE.resolve(safeName).normalize();
-
+        
         try {
             Files.write(savedPathFile, filePart.data);
         } catch (Exception e) {
@@ -119,9 +125,9 @@ private static final Path UPLOAD_IMAGE = Paths.get(
             HttpUtil.sendJson(exchange, 500, new ApiError("Could not save file"));
             return;
         }
-
+        
         //Image
-        safeName = UUID.randomUUID().toString().replace("-", "") + ext;
+        safeName = UUID.randomUUID().toString().replace("-", "") + ".png";
 
         Path savedPathImage = UPLOAD_IMAGE.resolve(safeName).normalize();
 
@@ -138,8 +144,8 @@ private static final Path UPLOAD_IMAGE = Paths.get(
 
         // 2. storage_path (Caminho relativo para salvar no banco)
         // Dica: Recomendo salvar o caminho relativo ao UPLOAD_FILE para facilitar se mudar o servidor de lugar
-        String storagePathFile ="C:\\Users\\arthu\\Desktop\\nullarchive_uploads\\books\\" + savedPathFile.getFileName().toString();
-        String storagePathImage ="C:\\Users\\arthu\\Desktop\\nullarchive_uploads\\images\\" + savedPathImage.getFileName().toString();
+        String storagePathFile =savedPathFile.getFileName().toString();
+        String storagePathImage = savedPathImage.getFileName().toString();
 
         // 3. original_filename (Nome original que o usuário subiu)
         String originalFilename = filePart.filename;

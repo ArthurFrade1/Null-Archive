@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Null Archive - Visualizar Livro</title>
+    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="novoLivro.css">
+    <style>
+        /* Mantendo seus estilos originais */
+        .view-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            border: 1px solid #333;
+            background: rgba(0,0,0,0.4);
+            display: none; /* Escondido até carregar os dados */
+        }
+        .book-aside { display: flex; flex-direction: column; gap: 20px; }
+        .full-cover { width: 100%; border: 1px solid #39ff14; box-shadow: 0 0 10px rgba(57, 255, 20, 0.2); }
+        .tech-box { border-top: 1px solid #333; padding-top: 15px; font-family: 'Courier New', monospace; font-size: 0.85rem; color: #888; }
+        .tech-label { color: #39ff14; text-transform: uppercase; font-size: 0.7rem; display: block; }
+        .book-main h1 { font-size: 2.5rem; color: #fff; margin-bottom: 5px; }
+        .author-sub { color: #8da2fb; font-size: 1.2rem; margin-bottom: 20px; display: block; }
+        .description-text { line-height: 1.6; color: #ccc; margin-bottom: 30px; border-left: 2px solid #333; padding-left: 15px; }
+        .action-zone { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-action { padding: 12px 24px; font-family: monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; border: 1px solid #39ff14; background: transparent; color: #39ff14; transition: 0.3s; }
+        .btn-action:hover { background: #39ff14; color: #000; box-shadow: 0 0 15px #39ff14; }
+        .btn-secondary { border-color: #8da2fb; color: #8da2fb; }
+        .btn-secondary:hover { background: #8da2fb; color: #000; box-shadow: 0 0 15px #8da2fb; }
+        .admin-panel { margin-top: 30px; padding: 20px; border: 1px dashed #ff3939; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="loading">CARREGANDO DADOS DO ARQUIVO...</div>
+
+<div class="view-container" id="book-content">
+    <aside class="book-aside">
+        <img id="book-cover" src="" class="full-cover" alt="Capa">
+        
+        <div class="tech-box">
+            <span class="tech-label">Metadata</span>
+            <p>IDIOMA: <span id="info-lang"></span></p>
+            <p>ANO: <span id="info-year"></span></p>
+            <p>LICENÇA: <span id="info-license"></span></p>
+        </div>
+
+        <div class="tech-box">
+            <span class="tech-label">File Specs</span>
+            <p>ARQUIVO: <span id="info-filename"></span></p>
+            <p>TAMANHO: <span id="info-size"></span> MB</p>
+            <p>UPLOAD EM: <span id="info-date"></span></p>
+            <p>CONTRIBUIDOR: <span id="info-user"></span></p>
+        </div>
+    </aside>
+
+    <main class="book-main">
+        <h1 id="book-title">Título do Livro</h1>
+        <span id="book-author" class="author-sub">Nome do Autor</span>
+        
+        <div id="book-tags" class="card-tags" style="margin-bottom: 30px;">
+            </div>
+
+        <div id="book-description" class="description-text">
+            </div>
+
+        <div class="tech-box">
+            <span class="tech-label">Source URL</span>
+            <a id="book-source" href="#" target="_blank" style="color: #8da2fb; text-decoration: none;">N/A</a>
+        </div>
+
+        <div class="action-zone">
+            <button id="btn-download" class="btn-action btn-secondary">DOWNLOAD</button>
+            <button id="btn-view" class="btn-action">ONLINE_READER</button>
+        </div>
+
+        <div id="admin-actions" class="admin-panel">
+            <span class="tech-label" style="color: #ff3939;">Moderação</span>
+            <button class="btn-action" style="border-color: #39ff14; color: #39ff14;" id="btn-approve">Aprovar</button>
+            <button class="btn-action" style="border-color: #ff3939; color: #ff3939;" id="btn-reject">Desaprovar/Excluir</button>
+        </div>
+    </main>
+</div>
+
+<script src="visualizarLivro.js"></script>
+</body>
+</html>

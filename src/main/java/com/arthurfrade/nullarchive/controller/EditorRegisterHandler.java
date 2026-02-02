@@ -51,7 +51,7 @@ public class EditorRegisterHandler implements HttpHandler {
             return;
         } catch (Exception e) {
             e.printStackTrace();
-            HttpUtil.sendJson(exchange, 500, new ApiError("Erro interno"));
+            HttpUtil.sendText(exchange, 500, "Erro interno");
             return;
         }
 
