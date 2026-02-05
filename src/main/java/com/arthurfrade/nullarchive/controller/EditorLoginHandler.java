@@ -12,7 +12,6 @@ import com.arthurfrade.nullarchive.util.Validation;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.io.IOException;
 
 

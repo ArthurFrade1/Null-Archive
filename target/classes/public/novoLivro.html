@@ -49,6 +49,14 @@
           <label for="published_year">Ano (ex: 2008)</label>
           <input id="published_year" name="published_year" type="number" min="0" max="3000" />
         </div>
+        <div class="row">
+          <select id="era" name="era" style="height: 100%; min-height: 38px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            <option value="DC">d.C.</option>
+            <option value="AC">a.C.</option>
+          </select>
+        </div>
+
+        
       </div>
 
       <div class="row">
@@ -217,9 +225,9 @@ function toggleTag(elemento, id) {
       return;
     }
     
-
-
-
+    era = false;
+    if(document.getElementById('era').value=="AC") era=true;
+    else era=false;
     const payload = {
       title: document.getElementById("title").value,
       author_name: document.getElementById("author_name").value || null,
@@ -229,6 +237,7 @@ function toggleTag(elemento, id) {
       license: document.getElementById("license").value,
       source_url: document.getElementById("source_url").value || null,
       file_kind: document.getElementById("file_kind").value,
+      era: era,
       tags: tagsSelecionadas
     };
 

@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-
+  <a href="Home.html">Voltar</a>
   <h1>Gerenciar Livros</h1>
 
 
@@ -21,12 +21,12 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
 </footer>
 
 <script>
-    async function atualizaBooks(tagsSelecionadas){
+    async function atualizaBooks(){
       const grid = document.getElementById('livros-grid');
 
-      const tagsString = tagsSelecionadas.join(',');
-
-      const res = await fetch(`http://127.0.0.1:8081/search/tags?tags=${encodeURIComponent(tagsString)}&admin`);
+      const res = await fetch(`http://127.0.0.1:8081/search/books?admin`, {
+        credentials: "include"
+      });
       
       const data = await res.json();
 
@@ -82,7 +82,7 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
         grid.appendChild(card);
       });
     }
-    atualizaBooks([]);
+    atualizaBooks();
 </script>
 </html>
 

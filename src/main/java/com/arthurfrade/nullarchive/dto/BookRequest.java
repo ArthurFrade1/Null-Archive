@@ -10,4 +10,5 @@ public class BookRequest {
         public String source_url;
         public String file_kind;
         public int[] tags;
+        public Boolean era;
     }

@@ -9,7 +9,6 @@ import com.arthurfrade.nullarchive.util.HttpUtil;
 import com.arthurfrade.nullarchive.util.TokenUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -46,6 +45,7 @@ public class AdminApproveHandler implements HttpHandler {
         
         if(userData.role=="EDITOR"){
             HttpUtil.sendText(exchange, 400, "Usuário não é admininstrador"); //Usuário 
+            return ;
         }
 
         //Usuário é ADMIN

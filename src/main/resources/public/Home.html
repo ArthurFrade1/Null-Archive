@@ -28,19 +28,29 @@
     <a href="gerenciarLivros.html">Gerenciar Livros</a>
   </div>
 
-  <div class="search-section">
-    <div class="search-bar">
-        <input type="text" id="search-input" placeholder="BUSCAR POR TÍTULO OU AUTOR..." autocomplete="off">
-        <button id="btn-search" class="btn-action">EXECUTAR_QUERY</button>
+  <main>
+    <div class="search-section">
+      <div class="search-bar">
+          <input type="text" id="search-input" placeholder="BUSCAR POR TÍTULO OU AUTOR..." autocomplete="off">
+      </div>
+  
+      <div class="filter-tags">
+          <span class="tech-label">Filtrar por Tags:</span>
+          <div id="container-tags" class="tag-wrapper"></div>
+      </div>
+      
+      <div class="view-tabs">
+        <button class="tab-btn active" data-view="catalog">Todos os Livros</button>
+        <button class="tab-btn" data-view="favorites">
+            <i class="star-icon">★</i> Meus Favoritos
+        </button>
+        <button class="tab-btn" data-view="openbooks">
+            <i class="bookmark-icon">🔖</i> Na Bancada
+        </button>
     </div>
-
-    <div class="filter-tags">
-        <span class="tech-label">Filtrar por Tags:</span>
-        <div id="container-tags" class="tag-wrapper"></div>
+      
     </div>
-  </div>
-
-  <main id="livros-grid" class="grid-container">
+  <div id="livros-grid" class="grid-container"></div>
   </main>
 
 
@@ -53,6 +63,62 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
 
 
 <script>
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active de todos e adiciona no clicado
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        abaAtiva = document.querySelector('.tab-btn.active').dataset.view; //Retorna modo: 'catalog', 'favorites' ou 'openbooks'
+
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+    });
+});
+
+  async function toggleFavorite(event, bookId) {
+    event.stopPropagation(); // Impede que o clique abra o livro se o card for clicável
+    
+    const starImg = event.currentTarget.querySelector('.star-icon');
+    const isFavorite = starImg.classList.contains('active');
+    const container = event.currentTarget;
+    // 1. Toca a imagem visualmente na hora (Feedback rápido pro usuário)
+    if (isFavorite) {
+        starImg.src = '../images/star-empty.png';
+        starImg.classList.remove('active');
+    } else {
+        starImg.src = '../images/star-filled.png';
+        starImg.classList.add('active');
+    }
+
+    container.setAttribute('data-tooltip', !isFavorite ? 'Desfavoritar' : 'Favoritar');
+
+    // 2. Envia para o seu Handler no Java
+    try {
+        const data = {
+        is_fav: isFavorite?false:true,
+        book_id: bookId,
+    };
+
+    const response = await fetch("http://127.0.0.1:8081/user/favorite", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify(data)
+    });
+
+
+    } catch (err) {
+        console.error("Erro ao salvar favorito:", err);
+    }
+}
 
   let tagsSelecionadas = [];
   async function loadTags() {
@@ -91,90 +157,163 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
       
       
     }
-    
-    async function atualizaBooks(tagsSelecionadas){
-      const grid = document.getElementById('livros-grid');
 
-      const tagsString = tagsSelecionadas.join(',');
+    let abaAtiva = 'all';
 
-      const res = await fetch(`http://127.0.0.1:8081/search/tags?tags=${encodeURIComponent(tagsString)}`);
-      
-      const data = await res.json();
+    async function toggleTag(elemento, id) {
 
-      grid.innerHTML = '';
-
-      data.forEach(book => {
-        const card = document.createElement('div');
-        card.className = 'book-card';
-    
-        const coverUrl = book.storage_path_image 
-            ? `http://127.0.0.1:8081/user/image/${book.storage_path_image}` 
-            : 'placeholder.png';
-    
-            // Gerar o HTML das tags dinamicamente
-          // Pegamos apenas as 3 primeiras (slice) caso o back mande mais por erro
-    
-          let tagsArray = [];
-    
-          if (book.tags) {
-              if (Array.isArray(book.tags)) {
-                  // Se já for um array (veio tratado do Java)
-                  tagsArray = book.tags;
-              } else if (typeof book.tags === 'string') {
-                  // Se veio como string "terror,fantasia", transforma em array
-                  tagsArray = book.tags.split(',');
-              }
-          }
-    
-          const tagsHtml = tagsArray
-              .slice(0, 3) 
-              .map(tag => `<span class="tag-pill">${tag.trim()}</span>`)
-              .join('');
-    
-              
-        card.innerHTML = `
-            <div class="card-cover">
-                <img src="${coverUrl}" alt="Capa de ${book.title}">
-            </div>
-            <div class="card-info">
-                <h3 class="book-title">${book.title}</h3>
-                <span class="book-author">${book.author_name || 'Autor desconhecido'}</span>
-                
-                <div class="card-tags">
-                    ${tagsHtml}
-                </div>
-            </div>
-        `;
-    
-        card.addEventListener('click', () => {
-            window.location.href = `visualizarLivro.html?id=${book.id}`;
-        });
-    
-        grid.appendChild(card);
-    });
-
-  }
-
-  async function toggleTag(elemento, id) {
-
-    if (tagsSelecionadas.includes(id)) {
-        // Se já está no array, remove (desmarcar)
-        tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
-        elemento.classList.remove('selecionado');
-
-        atualizaBooks(tagsSelecionadas);
-    } else {
-      // Se não está, adiciona (marcar)
-      if(tagsSelecionadas.length<3){
-        tagsSelecionadas.push(id);
-        elemento.classList.add('selecionado');
-
-        atualizaBooks(tagsSelecionadas);
+  
+      if (tagsSelecionadas.includes(id)) {
+          // Se já está no array, remove (desmarcar)
+          tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
+          elemento.classList.remove('selecionado');
+  
+      } else {
+        // Se não está, adiciona (marcar)
+        if(tagsSelecionadas.length<3){
+          tagsSelecionadas.push(id);
+          elemento.classList.add('selecionado');
+  
+        }
       }
-          
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+            
+  
     }
 
+    function reescreveTela(data){
+
+            const grid = document.getElementById('livros-grid');
+
+            grid.innerHTML = '';
+      
+            data.forEach(book => {
+              const card = document.createElement('div');
+              card.className = 'book-card';
+          
+              const coverUrl = book.storage_path_image 
+                  ? `http://127.0.0.1:8081/user/image/${book.storage_path_image}` 
+                  : 'placeholder.png';
+          
+                  // Gerar o HTML das tags dinamicamente
+                // Pegamos apenas as 3 primeiras (slice) caso o back mande mais por erro
+          
+                let tagsArray = [];
+          
+                if (book.tags) {
+                    if (Array.isArray(book.tags)) {
+                        // Se já for um array (veio tratado do Java)
+                        tagsArray = book.tags;
+                    } else if (typeof book.tags === 'string') {
+                        // Se veio como string "terror,fantasia", transforma em array
+                        tagsArray = book.tags.split(',');
+                    }
+                }
+          
+                const tagsHtml = tagsArray
+                    .slice(0, 3) 
+                    .map(tag => `<span class="tag-pill">${tag.trim()}</span>`)
+                    .join('');
+          
+                    
+              card.innerHTML = `
+              <div class="card-cover">
+                  <img src="${coverUrl}" alt="Capa de ${book.title}">
+                  ${book.keepreading === true ? `
+                      <div class="btn-fav">
+                          <img src="../images/bookmark.png" class="fav-icon" alt="Lido">
+                      </div>
+                  ` : ''}
+              </div>
+              
+              <div class="card-info">
+                  <div class="card-header">
+                      <h3 class="book-title">${book.title}</h3>
+                      <div class="star-container tooltip-container" 
+                          data-tooltip="${book.favorite ? 'Desfavoritar' : 'Favoritar'}" 
+                          onclick="toggleFavorite(event, ${book.id})">
+                          <img src="${book.favorite ? '../images/star-filled.png' : '../images/star-empty.png'}" 
+                              class="star-icon ${book.favorite ? 'active' : ''}" 
+                              alt="Estrela de Favorito">
+                      </div>
+                  </div>
+                  <span class="book-author">${book.author_name || 'Autor desconhecido'}</span>
+                  
+                  <div class="card-tags">
+                      ${tagsHtml}
+                  </div>
+              </div>
+          `;
+          
+              card.addEventListener('click', () => {
+                  window.location.href = `visualizarLivro.html?id=${book.id}`;
+              });
+          
+              grid.appendChild(card);
+          });
+
+    }
+    
+  async function updateCatalog(tagsSelecionadas){
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://127.0.0.1:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}`, {
+        credentials: "include"
+      });
+
+      const data = await res.json();
+
+      reescreveTela(data)
+
   }
+
+  async function updateOpenbooks(tagsSelecionadas){
+
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://127.0.0.1:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&openbooks`, {
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+        
+      const data = await res.json();
+      
+      reescreveTela(data)
+
+  }
+
+  async function updateFavorites(tagsSelecionadas){
+
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://127.0.0.1:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&favorites`, {
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+        
+      const data = await res.json();
+
+      reescreveTela(data)
+
+  }
+
 
   async function loadUserToken() {
     const res = await fetch("http://127.0.0.1:8081/user/token", {
@@ -236,17 +375,35 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
     });
     
     if (res.ok) {
-      window.location.href = "loginUsuario.html";
+      window.location.href = "Home.html";
     } else {
       const text = await res.text();
       alert("Erro: " + text);
     }
   });
-  
+
+  let debounceTimer;
+
+  const inputBusca = document.getElementById('search-input');
+
+  inputBusca.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+          // Chamamos a mesma função que as tags usam, 
+          // mas agora ela vai ler o input também
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+      }, 300); // 300ms de debounce
+  });
+  abaAtiva = 'catalog';
   loadTags()
   loadUserToken();
   loadData();
-  atualizaBooks([]);
+  updateCatalog([]);
 
   </script>
 </html>

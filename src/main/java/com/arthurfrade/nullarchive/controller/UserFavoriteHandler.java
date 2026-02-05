@@ -1,52 +1,47 @@
 package com.arthurfrade.nullarchive.controller;
 
+
+import com.arthurfrade.nullarchive.dto.ApiError;
 import com.arthurfrade.nullarchive.dto.ApiResponse;
+import com.arthurfrade.nullarchive.dto.FavoriteRequest;
 import com.arthurfrade.nullarchive.repository.UserRepository;
 import com.arthurfrade.nullarchive.util.CorsUtil;
 import com.arthurfrade.nullarchive.util.HttpUtil;
 import com.arthurfrade.nullarchive.util.TokenUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 
-
-public class EditorLogoutHandler implements HttpHandler {
-
+public class UserFavoriteHandler implements HttpHandler {
     private final UserRepository repo;
 
-    public EditorLogoutHandler(UserRepository repo) {
+    public UserFavoriteHandler(UserRepository repo) {
         this.repo = repo;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
         CorsUtil.addCorsHeaders(exchange);
         if (CorsUtil.handlePreflight(exchange)) return;
         if (!HttpUtil.requireMethod(exchange, "POST")) return;
+        if (!HttpUtil.requireJson(exchange)) return;
 
-        String token = TokenUtil.getCookieValue(exchange, "account_token");
-
+        FavoriteRequest req;
         try {
-            repo.logoutAccountSession(token);                            //Cria sessäo no banco
+            req = HttpUtil.readJson(exchange, FavoriteRequest.class);   //Lê dados JSON
         } catch (Exception e) {
-            e.printStackTrace();
-            HttpUtil.sendText(exchange, 500, "Erro interno");
+            HttpUtil.sendJson(exchange, 400, new ApiError("Invalid JSON"));
             return;
         }
+        String user_token = TokenUtil.getCookieValue(exchange, "user_token");
 
+        int user_id = repo.getUserId(user_token);
 
-        exchange.getResponseHeaders().add(                                                //Coloca token no Set-Cookie
-            "Set-Cookie",
-            "account_token="+
-            "; Path=/; HttpOnly; SameSite=Lax; Max-Age=0;"
-        );
+        if(req.is_fav)
+            repo.createFavorite(req.book_id, user_id);
+        else    
+            repo.deleteFavorite(req.book_id, user_id);
 
-        HttpUtil.sendJson(                                                                 //Responde
-            exchange,
-            200,
-            new ApiResponse("Logout")
-        );
+        HttpUtil.sendJson(exchange, 200, new ApiResponse("Favorito criado"));
     }
 }

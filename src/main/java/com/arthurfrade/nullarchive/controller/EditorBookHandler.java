@@ -12,7 +12,6 @@ import com.arthurfrade.nullarchive.util.TokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -156,10 +155,9 @@ private static final Path UPLOAD_IMAGE = Paths.get(
         // 5. size_bytes (Tamanho real do array de bytes)
         long sizeBytes = (long) filePart.data.length;
 
-        
         try {
             //Insere informações do livro no banco
-            int idBook = repo.createBook(meta.title, meta.author_name, meta.description, meta.language_code, meta.published_year, meta.license, userData.id, meta.source_url);
+            int idBook = repo.createBook(meta.title, meta.author_name, meta.description, meta.language_code, meta.published_year, meta.license, userData.id, meta.source_url, meta.era);
             //Cria ligações entre as tags e o livro
             repo.createBookTag(idBook, meta.tags);
 

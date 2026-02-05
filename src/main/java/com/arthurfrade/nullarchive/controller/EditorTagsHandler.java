@@ -1,14 +1,10 @@
 package com.arthurfrade.nullarchive.controller;
 
-import com.arthurfrade.nullarchive.dto.ApiError;
-import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.repository.UserRepository;
 import com.arthurfrade.nullarchive.util.CorsUtil;
 import com.arthurfrade.nullarchive.util.HttpUtil;
-import com.arthurfrade.nullarchive.util.TokenUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;

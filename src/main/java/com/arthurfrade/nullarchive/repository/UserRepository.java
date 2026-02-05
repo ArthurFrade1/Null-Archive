@@ -11,15 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.dto.AuthenticatedUserRequest;
 
 public class UserRepository{
 
     // 1) Dados de conexão
-    private static final String URL =
-            "jdbc:mysql://localhost:3306/nullarchive?useSSL=false&serverTimezone=UTC";
+// Adicione o trecho após o nome do seu banco de dados
+    private static final String URL = "jdbc:mysql://localhost:3306/nullarchive?allowPublicKeyRetrieval=true&useSSL=false";
 
     private static final String USER = "root";        // ou seu usuário
     private static final String PASSWORD = "LB6p2ozMhBUM7MTMDUKCU&vK3";
@@ -74,8 +73,8 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
         }
     }
 
-    public int createBook(String title, String author_name, String description, String language_code, Integer published_year, String license, int account_id, String source_url) throws SQLIntegrityConstraintViolationException, SQLException {
-        String sql = "INSERT INTO books (title, author_name, description, language_code, published_year, license, account_id, source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public int createBook(String title, String author_name, String description, String language_code, Integer published_year, String license, int account_id, String source_url, Boolean era) throws SQLIntegrityConstraintViolationException, SQLException {
+        String sql = "INSERT INTO books (title, author_name, description, language_code, published_year, license, account_id, source_url, is_bc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // 2) Tenta conectar
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -93,6 +92,7 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
             stmt.setString(6, license);
             stmt.setInt(7, account_id);
             stmt.setString(8, source_url);
+            stmt.setBoolean(9, era);
 
             // 4) Executa
             int rows = stmt.executeUpdate();
@@ -146,34 +146,40 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
             e.printStackTrace();
         }
     }
-
-    public List<Map<String, Object>> getBooksByTags(String[] tagIds, int approved) {
-    if (tagIds == null || tagIds.length == 0 || (tagIds.length == 1 && tagIds[0].isEmpty())) {
-        return getBooks(approved); 
-    }
-
+    
+    public List<Map<String, Object>> searchCatalog(String[] tagIds, String searchTerm, int approved) {
+    
     StringBuilder sql = new StringBuilder(
         "SELECT b.id, b.title, b.author_name, " +
         "MAX(f.storage_path_image) as storage_path_image, " +
         "GROUP_CONCAT(t.name) as tags_list " +
         "FROM books b " +
         "LEFT JOIN book_files f ON b.id = f.book_id " +
-        "JOIN book_tags bt ON b.id = bt.book_id " +
-        "JOIN tags t ON bt.tag_id = t.id " +
-        "WHERE b.approved = ? " +
-        "AND b.id IN ( " + // Começo da Subquery: Filtra quais livros entram
-            "SELECT bt2.book_id FROM book_tags bt2 " +
-            "WHERE bt2.tag_id IN ("
+        "LEFT JOIN book_tags bt ON b.id = bt.book_id " +
+        "LEFT JOIN tags t ON bt.tag_id = t.id " +
+        "WHERE b.approved = ? "
     );
 
-    for (int i = 0; i < tagIds.length; i++) {
-        sql.append("?");
-        if (i < tagIds.length - 1) sql.append(",");
+    // 1. Filtro de Texto
+    boolean hasText = (searchTerm != null && !searchTerm.trim().isEmpty());
+    if (hasText) {
+        sql.append(" AND (b.title LIKE ? OR b.author_name LIKE ?) ");
     }
 
-    sql.append(") GROUP BY bt2.book_id HAVING COUNT(DISTINCT bt2.tag_id) = ? " +
-               ") " + // Fim da Subquery
-               "GROUP BY b.id");
+    // 2. Filtro de Tags
+    boolean hasTags = (tagIds != null && tagIds.length > 0 && !tagIds[0].isEmpty());
+    if (hasTags) {
+        sql.append(" AND b.id IN ( " +
+                   "SELECT bt2.book_id FROM book_tags bt2 " +
+                   "WHERE bt2.tag_id IN (");
+        for (int i = 0; i < tagIds.length; i++) {
+            sql.append("?");
+            if (i < tagIds.length - 1) sql.append(",");
+        }
+        sql.append(") GROUP BY bt2.book_id HAVING COUNT(DISTINCT bt2.tag_id) = ?) ");
+    }
+
+    sql.append(" GROUP BY b.id");
 
     List<Map<String, Object>> lista = new ArrayList<>();
 
@@ -181,15 +187,20 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
          PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
         int index = 1;
-        stmt.setInt(index++, approved); // Status de aprovação
+        stmt.setInt(index++, approved);
 
-        // IDs para a Subquery
-        for (String id : tagIds) {
-            stmt.setInt(index++, Integer.parseInt(id.trim()));
+        if (hasText) {
+            String filter = "%" + searchTerm.trim() + "%";
+            stmt.setString(index++, filter);
+            stmt.setString(index++, filter);
         }
 
-        // Count para o HAVING da Subquery
-        stmt.setInt(index, tagIds.length);
+        if (hasTags) {
+            for (String id : tagIds) {
+                stmt.setInt(index++, Integer.parseInt(id.trim()));
+            }
+            stmt.setInt(index++, tagIds.length);
+        }
 
         try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -198,12 +209,12 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                 book.put("title", rs.getString("title"));
                 book.put("author_name", rs.getString("author_name"));
                 book.put("storage_path_image", rs.getString("storage_path_image"));
-                book.put("tags", rs.getString("tags_list")); // Agora virão todas!
+                book.put("tags", rs.getString("tags_list"));
                 lista.add(book);
             }
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+    } catch (Exception e) { 
+        e.printStackTrace(); 
     }
     return lista;
 }
@@ -233,7 +244,7 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
 
     public Map<String, Object> getBooksInfo(int bookId) {
         String sql = "SELECT b.id, b.title, b.author_name, b.description, b.language_code, " +
-                    "b.published_year, b.license, b.account_id, b.source_url, f.file_kind, f.original_filename, f.size_bytes, f.created_at, a.username, " +
+                    "b.published_year, b.license, b.account_id, b.source_url, f.file_kind, f.original_filename, f.size_bytes, f.created_at, a.username, b.is_bc, " +
                     "MAX(f.storage_path_file) as storage_path_file, " + 
                     "MAX(f.storage_path_image) as storage_path_image, " +
                     "GROUP_CONCAT(t.name) as names_das_tags " +
@@ -244,7 +255,7 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                     "LEFT JOIN accounts a ON b.account_id = a.id " +
                     "WHERE b.id = ? " + 
                     "GROUP BY b.id, b.title, b.author_name, b.description, b.language_code, " +
-                    "b.published_year, b.license, b.account_id, b.source_url, f.file_kind, f.original_filename, f.size_bytes, f.created_at, a.username";
+                    "b.published_year, b.license, b.account_id, b.source_url, f.file_kind, f.original_filename, f.size_bytes, f.created_at, a.username, b.is_bc";
 
         Map<String, Object> book = new HashMap<>();
 
@@ -271,6 +282,8 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                     book.put("original_filename", rs.getString("original_filename"));
                     book.put("size_bytes", rs.getLong("size_bytes"));
                     book.put("created_at", rs.getString("created_at"));
+                    book.put("is_bc", rs.getBoolean("is_bc"));
+
                 }
             }
         } catch (SQLException e) {
@@ -280,30 +293,65 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
         return book;
     }
 
+public List<Map<String, Object>> searchOpenBooks(int user_id, String[] tagIds, String searchTerm) {
+    StringBuilder sql = new StringBuilder(
+        "SELECT b.id, b.title, b.author_name, b.language_code, " +
+        "b.published_year, b.approved, rp.updated_at, " +
+        "MAX(f.storage_path_image) as storage_path_image, " +
+        "GROUP_CONCAT(t.name) as names_das_tags " +
+        "FROM books b " +
+        "LEFT JOIN book_files f ON b.id = f.book_id " +
+        "LEFT JOIN book_tags bt ON b.id = bt.book_id " +
+        "LEFT JOIN tags t ON bt.tag_id = t.id " +
+        "LEFT JOIN reading_progress rp ON rp.book_id = b.id " +
+        "WHERE b.approved = 1 AND rp.user_id = ? "
+    );
 
-    public List<Map<String, Object>> getBooks(int approved) {
-    String sql = "SELECT b.id, b.title, b.author_name, b.language_code, " +
-                 "b.published_year, b.approved, " +
-                 "MAX(f.storage_path_image) as storage_path_image, " +
-                 "GROUP_CONCAT(t.name) as names_das_tags " +
-                 "FROM books b " +
-                 "LEFT JOIN book_files f ON b.id = f.book_id " +
-                 "LEFT JOIN book_tags bt ON b.id = bt.book_id " +
-                 "LEFT JOIN tags t ON bt.tag_id = t.id " +
-                 "WHERE b.approved=? " +
-                 "GROUP BY b.id, b.title, b.author_name, b.language_code, " +
-                 "b.published_year";
+    // 1. Filtro de Texto (Título ou Autor)
+    boolean hasText = (searchTerm != null && !searchTerm.trim().isEmpty());
+    if (hasText) {
+        sql.append(" AND (b.title LIKE ? OR b.author_name LIKE ?) ");
+    }
+
+    // 2. Filtro de Tags (Subquery para garantir que tenha TODAS as tags selecionadas)
+    boolean hasTags = (tagIds != null && tagIds.length > 0 && !tagIds[0].isEmpty());
+    if (hasTags) {
+        sql.append(" AND b.id IN ( " +
+                   "SELECT bt2.book_id FROM book_tags bt2 " +
+                   "WHERE bt2.tag_id IN (");
+        for (int i = 0; i < tagIds.length; i++) {
+            sql.append("?");
+            if (i < tagIds.length - 1) sql.append(",");
+        }
+        sql.append(") GROUP BY bt2.book_id HAVING COUNT(DISTINCT bt2.tag_id) = ?) ");
+    }
+
+    sql.append(" GROUP BY b.id, b.title, b.author_name, b.language_code, b.published_year, b.approved, rp.updated_at ");
+    sql.append(" ORDER BY rp.updated_at DESC");
 
     List<Map<String, Object>> listaBooks = new ArrayList<>();
 
-    // 1. No parênteses, apenas DECLARAMOS o que o Java deve fechar sozinho
     try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
+         PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
-        // 2. No corpo do try, CONFIGURAMOS e EXECUTAMOS
-        stmt.setInt(1, approved);
-        
-        // O ResultSet também pode ser declarado no try() ou aqui dentro
+        int index = 1;
+        stmt.setInt(index++, user_id); // Primeiro parâmetro é sempre o user_id
+
+        // Preenche busca por texto
+        if (hasText) {
+            String filter = "%" + searchTerm.trim() + "%";
+            stmt.setString(index++, filter);
+            stmt.setString(index++, filter);
+        }
+
+        // Preenche IDs das tags e o contador do HAVING
+        if (hasTags) {
+            for (String id : tagIds) {
+                stmt.setInt(index++, Integer.parseInt(id.trim()));
+            }
+            stmt.setInt(index++, tagIds.length);
+        }
+
         try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> book = new HashMap<>();
@@ -315,18 +363,187 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                 book.put("storage_path_image", rs.getString("storage_path_image"));
                 book.put("tags", rs.getString("names_das_tags"));
                 book.put("approved", rs.getString("approved"));
+                book.put("updated_at", rs.getString("updated_at"));
+                book.put("keepreading", true); 
                 
                 listaBooks.add(book);
             }
         }
 
     } catch (SQLException e) {
-        System.err.println("Erro ao buscar books:");
+        System.err.println("Erro ao buscar open books:");
         e.printStackTrace();
     }
 
     return listaBooks;
 }
+public List<Map<String, Object>> searchFavorites(int user_id, String[] tagIds, String searchTerm) {
+    StringBuilder sql = new StringBuilder(
+        "SELECT b.id, b.title, b.author_name, b.language_code, " +
+        "b.published_year, b.approved, " +
+        "MAX(bf.storage_path_image) as storage_path_image, " +
+        "GROUP_CONCAT(t.name) as names_das_tags " +
+        "FROM books b " +
+        "LEFT JOIN book_files bf ON b.id = bf.book_id " +
+        "LEFT JOIN book_tags bt ON b.id = bt.book_id " +
+        "LEFT JOIN tags t ON bt.tag_id = t.id " +
+        "LEFT JOIN favorites f ON f.book_id = b.id " +
+        "WHERE b.approved = 1 AND f.user_id = ? "
+    );
+
+    // 1. Filtro de Texto (Título ou Autor)
+    boolean hasText = (searchTerm != null && !searchTerm.trim().isEmpty());
+    if (hasText) {
+        sql.append(" AND (b.title LIKE ? OR b.author_name LIKE ?) ");
+    }
+
+    // 2. Filtro de Tags (Subquery para garantir que tenha TODAS as tags selecionadas)
+    boolean hasTags = (tagIds != null && tagIds.length > 0 && !tagIds[0].isEmpty());
+    if (hasTags) {
+        sql.append(" AND b.id IN ( " +
+                   "SELECT bt2.book_id FROM book_tags bt2 " +
+                   "WHERE bt2.tag_id IN (");
+        for (int i = 0; i < tagIds.length; i++) {
+            sql.append("?");
+            if (i < tagIds.length - 1) sql.append(",");
+        }
+        sql.append(") GROUP BY bt2.book_id HAVING COUNT(DISTINCT bt2.tag_id) = ?) ");
+    }
+
+    sql.append(" GROUP BY b.id, b.title, b.author_name, b.language_code, b.published_year ");
+
+    List<Map<String, Object>> listaBooks = new ArrayList<>();
+
+    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+         PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+        int index = 1;
+        stmt.setInt(index++, user_id); // Define o usuário dono dos favoritos
+
+        // Preenche busca por texto
+        if (hasText) {
+            String filter = "%" + searchTerm.trim() + "%";
+            stmt.setString(index++, filter); // b.title
+            stmt.setString(index++, filter); // b.author_name
+        }
+
+        // Preenche IDs das tags e o contador do HAVING
+        if (hasTags) {
+            for (String id : tagIds) {
+                stmt.setInt(index++, Integer.parseInt(id.trim()));
+            }
+            stmt.setInt(index++, tagIds.length);
+        }
+
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> book = new HashMap<>();
+                book.put("id", rs.getString("id"));
+                book.put("title", rs.getString("title"));
+                book.put("author_name", rs.getString("author_name"));
+                book.put("language_code", rs.getString("language_code"));
+                book.put("published_year", rs.getInt("published_year"));
+                book.put("storage_path_image", rs.getString("storage_path_image"));
+                book.put("tags", rs.getString("names_das_tags"));
+                book.put("approved", rs.getString("approved"));
+                book.put("favorite", true); 
+                
+                listaBooks.add(book);
+            }
+        }
+
+    } catch (SQLException e) {
+        System.err.println("Erro ao buscar favoritos:");
+        e.printStackTrace();
+    }
+
+    return listaBooks;
+}
+
+    public List<Map<String, Object>> verificaOpenBooks(int user_id, List<Map<String, Object>> books) {
+        String sql ="SELECT rp.id " +
+                    "FROM reading_progress rp " +
+                    "LEFT JOIN user_sessions u ON u.id = rp.user_id " +
+                    "LEFT JOIN books b ON b.id = rp.book_id " +
+                    "WHERE u.id = ? AND b.id = ? ";
+
+        // 1. No parênteses, apenas DECLARAMOS o que o Java deve fechar sozinho
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+            stmt.setInt(1, user_id);
+            for (Map<String,Object> book : books) {
+                String idString = String.valueOf(book.get("id"));
+    
+                // 2. Converte essa String para um int puro
+                int bookId = Integer.parseInt(idString);
+                
+                stmt.setInt(2, bookId);
+
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        book.put("keepreading", true);
+                        
+                    }else{
+                        
+                        book.put("keepreading", false);
+                    }
+                }
+                
+            }
+            
+
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar books:");
+            e.printStackTrace();
+        }
+
+        return books;
+    }
+    public List<Map<String, Object>> verificaFavorito(int user_id, List<Map<String, Object>> books) {
+        String sql ="SELECT f.id " +
+                    "FROM favorites f " +
+                    "LEFT JOIN user_sessions u ON u.id = f.user_id " +
+                    "LEFT JOIN books b ON b.id = f.book_id " +
+                    "WHERE u.id = ? AND b.id = ? ";
+
+        // 1. No parênteses, apenas DECLARAMOS o que o Java deve fechar sozinho
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+            stmt.setInt(1, user_id);
+            for (Map<String,Object> book : books) {
+                String idString = String.valueOf(book.get("id"));
+    
+                // 2. Converte essa String para um int puro
+                int bookId = Integer.parseInt(idString);
+                
+                stmt.setInt(2, bookId);
+
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        book.put("favorite", true);
+                        
+                    }else{
+                        
+                        book.put("favorite", false);
+                    }
+                }
+                
+            }
+            
+
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar books:");
+            e.printStackTrace();
+        }
+
+        return books;
+    }
 
     public List<Map<String, Object>> getTags() {
         String sql = "SELECT id, name FROM tags";
@@ -426,6 +643,26 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
         }
     }
 
+
+    public void updateReadBook(int book_id, int user_id){
+        
+        String sql = "INSERT INTO reading_progress (book_id, user_id) " +
+             "VALUES (?, ?) " +
+             "ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, book_id);
+            stmt.setInt(2, user_id);
+            stmt.executeUpdate();
+            
+        }catch (SQLException e) {
+            System.err.println("Erro ao atualizar usuario:");
+            e.printStackTrace();
+        }
+    }
+
     public Boolean userExists(String anon_token) throws SQLException {
         String sql = "SELECT * FROM user_sessions WHERE user_token = ?";
         
@@ -439,6 +676,25 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                 return false;
             }
         }
+    }
+
+    public int getUserId(String user_token){
+        String sql = "SELECT id FROM user_sessions WHERE user_token = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, user_token);
+
+                try(ResultSet rs = stmt.executeQuery()){
+                    if(!rs.next()) return 0;
+                    return rs.getInt("id");
+                }
+            }
+        catch(Exception e){
+            System.out.println("Erro ao buscar id");
+        }
+        return 0;
     }
     
     public AuthenticatedUserRequest getEditorCredentials(String email) throws SQLException {
@@ -457,9 +713,9 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
     }
 
     public UserSessionData getEditorData(String token) throws SQLException{
-        String sql = "SELECT u.id, u.username, u.role\r\n" + //
-                        "FROM account_sessions s\r\n" + //
-                        "JOIN accounts u ON u.id = s.account_id\r\n" + //
+        String sql = "SELECT u.id, u.username, u.role " + //
+                        "FROM account_sessions s " + //
+                        "JOIN accounts u ON u.id = s.account_id " + //
                         "WHERE s.account_token = ? ";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -478,6 +734,45 @@ PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_K
                 return null;
             }
         }
+    }
+
+    public void createFavorite(int book_id, int user_id){
+
+        String sql = "INSERT INTO favorites (book_id, user_id) " +
+             "VALUES (?, ?)";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, book_id);
+            stmt.setInt(2, user_id);
+            stmt.executeUpdate();
+            
+        }catch (SQLException e) {
+            System.err.println("Erro ao criar favorito:");
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public void deleteFavorite(int book_id, int user_id){
+
+        String sql = "DELETE FROM favorites WHERE " +
+             "book_id = ? AND user_id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, book_id);
+            stmt.setInt(2, user_id);
+            stmt.executeUpdate();
+            
+        }catch (SQLException e) {
+            System.err.println("Erro ao deletear favorito:");
+            e.printStackTrace();
+        }
+
     }
    
 }
