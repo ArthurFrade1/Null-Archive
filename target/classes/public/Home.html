@@ -3,51 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <title>Home</title>
-    <link rel="stylesheet" href="estilo.css">
-    <link rel="stylesheet" href="novoLivro.css">
+  <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="Header.css">
 </head>
 <body>
 
-  <h1>Home</h1>
-
-  <!-- Visível apenas para NÃO autenticados -->
-  <div id="user-actions">
-    <p>Deseja compartilhar um livro?</p>
-    <a href="loginUsuario.html">Entre na sua conta</a><br>
-    <a href="cadastroUsuário.html">Crie sua conta</a>
-  </div>
-
-  <!-- Visível apenas para autenticados -->
-  <div id="account-actions" style="display:none;">
-    <p>Bem-vindo, <span id="name"></span></p>
-    <a href="novoLivro.html">Adicionar novo livro</a>
-    <button id="logout">Encerrar sessão</button>
-  </div>
-
-  <div id="admin-actions" style="display:none;">
-    <a href="gerenciarLivros.html">Gerenciar Livros</a>
-  </div>
+<header id="main-header" class="main-header"></header>
 
   <main>
+    <div class="view-tabs">
+      <button class="tab-btn active" data-view="catalog">
+          Catálogo
+      </button>
+      <button class="tab-btn" data-view="favorites">
+          <img src="../images/star-filled.png" class="tab-icon" alt="Favoritos"> 
+          Meus Favoritos
+      </button>
+      <button class="tab-btn" data-view="openbooks">
+          <img src="../images/bookmark.png" class="tab-icon" alt="Bancada"> 
+          Na Bancada
+      </button>
+    </div>
+
     <div class="search-section">
-      <div class="search-bar">
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
           <input type="text" id="search-input" placeholder="BUSCAR POR TÍTULO OU AUTOR..." autocomplete="off">
-      </div>
+          <button id="clear-search" title="Limpar busca">×</button>
+        </div>
+    </div>
   
       <div class="filter-tags">
-          <span class="tech-label">Filtrar por Tags:</span>
           <div id="container-tags" class="tag-wrapper"></div>
       </div>
       
-      <div class="view-tabs">
-        <button class="tab-btn active" data-view="catalog">Todos os Livros</button>
-        <button class="tab-btn" data-view="favorites">
-            <i class="star-icon">★</i> Meus Favoritos
-        </button>
-        <button class="tab-btn" data-view="openbooks">
-            <i class="bookmark-icon">🔖</i> Na Bancada
-        </button>
-    </div>
       
     </div>
   <div id="livros-grid" class="grid-container"></div>
@@ -57,12 +47,30 @@
 </body>
 
 <footer>
-  <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro.
-Não utilizamos cookies de rastreamento ou publicidade.”</p>
+    <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro. 
+    <br>Não utilizamos cookies de rastreamento ou publicidade.”</p>
 </footer>
 
+  <script src="Header.js"></script>
 
 <script>
+
+  const searchInput = document.getElementById('search-input');
+const clearBtn = document.getElementById('clear-search');
+
+searchInput.addEventListener('input', () => {
+    // Mostra o botão X se houver texto
+    clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+});
+
+clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchInput.focus();
+    
+    // Dispare aqui a sua função de busca para resetar o grid!
+    filtrarLivros(); 
+});
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -140,20 +148,20 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
       // --- O PULO DO GATO ESTÁ AQUI ---
       // Percorremos cada item (tag) dentro do array 'data'
       data.forEach(tag => {
-          // 2. Cria o botão dinamicamente para CADA tag
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.innerText = tag.nome;
-          btn.classList.add('btn-tag');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerText = tag.nome;
+        
+        // Mudamos para a nova classe de filtro
+        btn.classList.add('filter-pill'); 
 
-          // 3. Lógica do Clique
-          btn.addEventListener('click', () => {
-              toggleTag(btn, tag.id);
-          });
+        btn.addEventListener('click', () => {
+            // Garanta que dentro da função toggleTag você faça: btn.classList.toggle('active');
+            toggleTag(btn, tag.id);
+        });
 
-          // Adiciona o botão criado ao container na tela
-          container.appendChild(btn);
-      });
+        container.appendChild(btn);
+    });
       
       
     }
@@ -166,13 +174,13 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
       if (tagsSelecionadas.includes(id)) {
           // Se já está no array, remove (desmarcar)
           tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
-          elemento.classList.remove('selecionado');
+          elemento.classList.remove('active');
   
       } else {
         // Se não está, adiciona (marcar)
         if(tagsSelecionadas.length<3){
           tagsSelecionadas.push(id);
-          elemento.classList.add('selecionado');
+          elemento.classList.add('active');
   
         }
       }
@@ -321,66 +329,9 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
       credentials: "include"
     });
   }
-  async function loadData() {
-    const res = await fetch("http://127.0.0.1:8081/editor/data", {
-      credentials: "include"
-    });
-    
-    if (!res.ok) {
-      showUser();
-      return;
-    }
-    
-    const data = await res.json();
-    
-    
-    if (data.authenticated === true) {
-      showEditor(data);
-      if(data.role === "ADMIN"){
-        showAdmin();
-      }
-    } else {
-      showUser();
-    }
-  }
-
-  function showUser() {
-    document.getElementById("user-actions").style.display = "block";
-    document.getElementById("account-actions").style.display = "none";
-    document.getElementById("admin-actions").style.display = "none";
-  }
-
-  function showEditor(data) {
-    document.getElementById("user-actions").style.display = "none";
-    document.getElementById("account-actions").style.display = "block";
-    document.getElementById("admin-actions").style.display = "none";
-    document.getElementById("name").textContent = data.username;
-  }
-
-  function showAdmin(){
-    document.getElementById("user-actions").style.display = "none";
-    document.getElementById("account-actions").style.display = "block";
-    document.getElementById("admin-actions").style.display = "block";
-    document.getElementById("name").textContent = "Admin";
-  }
-
   
-  document.getElementById("logout").addEventListener("click", async function (e) {
-    e.preventDefault(); // 🚫 impede o submit padrão
-    
-    const res = await fetch("http://127.0.0.1:8081/editor/logout", {
-      method: "POST",
-      credentials: "include",
-      
-    });
-    
-    if (res.ok) {
-      window.location.href = "Home.html";
-    } else {
-      const text = await res.text();
-      alert("Erro: " + text);
-    }
-  });
+  
+  
 
   let debounceTimer;
 
@@ -399,6 +350,7 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
           updateOpenbooks(tagsSelecionadas);
       }, 300); // 300ms de debounce
   });
+  
   abaAtiva = 'catalog';
   loadTags()
   loadUserToken();
@@ -406,5 +358,6 @@ Não utilizamos cookies de rastreamento ou publicidade.”</p>
   updateCatalog([]);
 
   </script>
+
 </html>
 

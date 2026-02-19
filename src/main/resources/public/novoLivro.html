@@ -4,136 +4,130 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Novo Livro</title>
+  <link rel="stylesheet" href="Header.css">
   <link rel="stylesheet" href="estilo.css">
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
-    h1 { margin-bottom: 8px; }
-    .muted { color: #666; font-size: 0.95rem; }
-    form { margin-top: 18px; display: grid; gap: 14px; }
-    .row { display: grid; gap: 8px; }
-    label { font-weight: 600; }
-    input, textarea, select { padding: 10px; font-size: 1rem; }
-    textarea { min-height: 120px; resize: vertical; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .actions { display: flex; gap: 12px; align-items: center; }
-    button { padding: 10px 14px; font-size: 1rem; cursor: pointer; }
-    .danger { background: #fff; border: 1px solid #c00; color: #c00; }
-    .ok { background: #0a7; border: 1px solid #0a7; color: #fff; }
-    .card { border: 1px solid #ddd; padding: 14px; border-radius: 8px; }
-    .hint { font-size: 0.9rem; color: #444; }
-    .status { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  </style>
   <link rel="stylesheet" href="novoLivro.css">
+
 </head>
+<header id="main-header" class="main-header"></header>
+
 <body>
-  <a href="Home.html">voltar</a>
-  <h1>Adicionar livro</h1>
-  <p class="muted">Envie metadados e o arquivo (PDF/EPUB/MOBI/TXT/OUTRO).</p>
+<main class="login-viewport admin-mode"> <div class="form-container-tech">
+        <header class="form-header">
+            <span class="admin-badge">Database Input</span>
+            <h1>Registrar Obra</h1>
+            <div class="title-underline"></div>
+        </header>
 
-  <div class="card">
-    <form id="bookForm">
+        <form id="bookForm" class="tech-form">
+            <div class="form-row">
+                <div class="field-wrap">
+                    <input type="text" id="title" name="title" placeholder="TÍTULO DA OBRA *" required>
+                    <div class="field-line"></div>
+                </div>
+                <div class="field-wrap">
+                    <input type="text" id="author_name" name="author_name" placeholder="AUTOR">
+                    <div class="field-line"></div>
+                </div>
+            </div>
 
-      <div class="row">
-        <label for="title">Título *</label>
-        <input id="title" name="title" type="text" maxlength="255" required />
-      </div>
+            <div class="form-row grid-3">
+                <div class="field-wrap">
+                    <input type="number" id="published_year" placeholder="ANO">
+                    <div class="field-line"></div>
+                </div>
+                <div class="field-wrap select-wrap">
+                    <select id="era">
+                        <option value="DC">D.C.</option>
+                        <option value="AC">A.C.</option>
+                    </select>
+                    <div class="field-line"></div>
+                </div>
+                <div class="field-wrap">
+                    <input type="text" id="language_code" placeholder="IDIOMA (ex: PT-BR)">
+                    <div class="field-line"></div>
+                </div>
+            </div>
 
-      <div class="grid2">
-        <div class="row">
-          <label for="author_name">Autor</label>
-          <input id="author_name" name="author_name" type="text" maxlength="255" />
-        </div>
+            <div class="field-wrap">
+                <textarea id="description" placeholder="DESCRIÇÃO / SINOPSE DA OBRA"></textarea>
+                <div class="field-line"></div>
+            </div>
 
-        <div class="row">
-          <label for="published_year">Ano (ex: 2008)</label>
-          <input id="published_year" name="published_year" type="number" min="0" max="3000" />
-        </div>
-        <div class="row">
-          <select id="era" name="era" style="height: 100%; min-height: 38px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            <option value="DC">d.C.</option>
-            <option value="AC">a.C.</option>
-          </select>
-        </div>
+            <div class="field-wrap select-wrap">
+                <select id="file_kind" required>
+                    <option value="" disabled selected>FORMATO DO ARQUIVO *</option>
+                    <option value="PDF">PDF</option>
+                    <option value="EPUB">EPUB</option>
+                    <option value="MOBI">MOBI</option>
+                    <option value="TXT">TEXTO (TXT)</option>
+                </select>
+                <div class="field-line"></div>
+            </div>
 
-        
-      </div>
+            <div class="form-row">
+                <div class="field-wrap select-wrap">
+                    <select id="license" required>
+                        <option value="" disabled selected>LICENÇA *</option>
+                        <option value="PUBLIC_DOMAIN">DOMÍNIO PÚBLICO</option>
+                        <option value="CC0">CC0</option>
+                        <option value="CC_BY">CC BY</option>
+                    </select>
+                    <div class="field-line"></div>
+                </div>
+                <div class="field-wrap">
+                    <input type="url" id="source_url" placeholder="FONTE (URL)">
+                    <div class="field-line"></div>
+                </div>
+            </div>
 
-      <div class="row">
-        <label for="description">Descrição</label>
-        <textarea id="description" name="description"></textarea>
-      </div>
+            <div class="form-row uploads">
+              <div class="file-input-wrapper">
+                  <label class="section-label">ARQUIVO (PDF/EPUB) *</label>
+                  <label for="book_file" class="custom-file-upload">
+                      <span class="upload-icon">⇪</span>
+                      <span id="file-name-book">SELECIONAR DOCUMENTO</span>
+                  </label>
+                  <input type="file" id="book_file" required onchange="updateFileName('book_file', 'file-name-book')">
+                  <div class="field-line"></div>
+              </div>
 
-      <div class="grid3">
-        <div class="row">
-          <label for="language_code">Idioma (ex: pt-BR, en)</label>
-          <input id="language_code" name="language_code" type="text" maxlength="5" placeholder="pt-BR" />
-          <div class="hint">No seu schema é CHAR(5). Exemplos: <code>pt-BR</code>, <code>en</code>.</div>
-        </div>
-
-        <div class="row">
-          <label for="license">Licença *</label>
-          <select id="license" name="license" required>
-            <option value="UNKNOWN">UNKNOWN</option>
-            <option value="PUBLIC_DOMAIN">PUBLIC_DOMAIN</option>
-            <option value="CC0">CC0</option>
-            <option value="CC_BY">CC_BY</option>
-            <option value="CC_BY_SA">CC_BY_SA</option>
-          </select>
-        </div>
-
-        <div class="row">
-          <label for="source_url">Fonte (URL)</label>
-          <input id="source_url" name="source_url" type="url" maxlength="2048" placeholder="https://..." />
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin: 0 0 10px;">Arquivo do livro *</h3>
-
-        <div class="grid2">
-          <div class="row">
-            <label for="file_kind">Tipo *</label>
-            <select id="file_kind" name="file_kind" required>
-              <option value="PDF">PDF</option>
-              <option value="EPUB">EPUB</option>
-              <option value="MOBI">MOBI</option>
-              <option value="TXT">TXT</option>
-              <option value="OTHER">OTHER</option>
-            </select>
+              <div class="file-input-wrapper">
+                  <label for="image_book" class="custom-file-upload">
+                      <span class="upload-icon">⎙</span>
+                      <span id="file-name-image">CARREGAR ARTE DA CAPA</span>
+                  </label>
+                  <input type="file" id="image_book" required onchange="updateFileName('image_book', 'file-name-image')">
+                  <div class="field-line"></div>
+              </div>
           </div>
 
-          <div class="row">
-            <label for="book_file">Arquivo *</label>
-            <input id="book_file" name="book_file" type="file" required />
-            <label for="image_book">Imagem do Arquivo *</label>
-            <input id="image_book" name="image_book" type="file" required />
-            <div class="hint">O backend deve salvar o arquivo no disco e registrar em <code>book_files</code>.</div>
-          </div>
-        </div>
-      </div>
+            <div class="filter-tags">
+    <label class="section-label">SELECIONE AS TAGS (1 A 3)</label>
+    <div id="container-tags" class="tag-wrapper"></div>
+</div>
 
+<div id="status" style="color: #8da2fb; font-size: 0.8rem; text-align: center; margin-bottom: 20px; min-height: 1em;"></div>
 
+<div class="actions-row">
+    <button type="submit" class="nav-btn">ENVIAR</button>
+    <button type="button" id="resetBtn" class="link-secondary-tech">LIMPAR CAMPOS</button>
+</div>
+        </form>
+    </div>
+</main>
 
-      <div class="actions">
-        <button class="ok" type="submit">Enviar</button>
-        <button class="danger" type="button" id="resetBtn">Limpar</button>
-      </div>
+<div id="successModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="success-icon">✓</div>
+        <h2>Sincronizado!</h2>
+        <p>A obra foi catalogada com sucesso no Null Archive.</p>
+        <button onclick="window.location.href='Home.html'" class="btn-login-ajustado">VOLTAR À HOME</button>
+    </div>
+</div>
+</body>
 
-      <div class="card">
-        <div class="muted">Status</div>
-        <div id="status" class="status"></div>
-      </div>
-
-    </form>
-  </div>
-  <label>Selecione entre 1 e 3 tags:</label>
-  <div id="container-tags" class="tag-wrapper">
-      </div>
-
-  <input type="hidden" name="tags_selecionadas" id="tags-input">
-
-
+<script src="Header.js"></script>
 <script>
   
   const form = document.getElementById("bookForm");
@@ -204,9 +198,34 @@ function toggleTag(elemento, id) {
   });
 
   function setStatus(msg) {
-    statusEl.textContent = msg;
-  }
+    if (statusEl) {
+        statusEl.textContent = msg;
+    } else {
+        console.log("Status update: " + msg);
+    }
+}
 
+  function updateFileName(inputId, spanId) {
+    const input = document.getElementById(inputId);
+    const span = document.getElementById(spanId);
+    const wrapper = input.parentElement;
+
+    if (input.files && input.files.length > 0) {
+        // Pega o nome do arquivo
+        let fileName = input.files[0].name;
+        
+        // Se o nome for muito grande, corta para não quebrar o layout
+        if (fileName.length > 25) {
+            fileName = fileName.substring(0, 22) + "...";
+        }
+        
+        span.innerText = fileName.toUpperCase();
+        wrapper.classList.add('file-selected');
+    } else {
+        span.innerText = inputId === 'book_file' ? "SELECIONAR DOCUMENTO" : "CARREGAR ARTE DA CAPA";
+        wrapper.classList.remove('file-selected');
+    }
+}
 
 
   form.addEventListener("submit", async (e) => {
@@ -225,21 +244,23 @@ function toggleTag(elemento, id) {
       return;
     }
     
-    era = false;
-    if(document.getElementById('era').value=="AC") era=true;
-    else era=false;
-    const payload = {
-      title: document.getElementById("title").value,
-      author_name: document.getElementById("author_name").value || null,
-      description: document.getElementById("description").value || null,
-      language_code: document.getElementById("language_code").value || null,
-      published_year: document.getElementById("published_year").value ? Number(document.getElementById("published_year").value) : null,
-      license: document.getElementById("license").value,
-      source_url: document.getElementById("source_url").value || null,
-      file_kind: document.getElementById("file_kind").value,
-      era: era,
-      tags: tagsSelecionadas
-    };
+    const eraValue = document.getElementById('era').value === "AC";
+
+const payload = {
+    title: document.getElementById("title").value,
+    author_name: document.getElementById("author_name").value || null,
+    description: document.getElementById("description").value || null,
+    language_code: document.getElementById("language_code").value || null,
+    published_year: document.getElementById("published_year").value ? Number(document.getElementById("published_year").value) : null,
+    license: document.getElementById("license").value,
+    source_url: document.getElementById("source_url").value || null,
+    
+    // REATIVADO E CORRIGIDO:
+    file_kind: document.getElementById("file_kind").value, 
+    
+    era: eraValue,
+    tags: tagsSelecionadas
+};
 
     const fd = new FormData();
     fd.append("meta", new Blob([JSON.stringify(payload)], { type: "application/json" }));
@@ -249,27 +270,23 @@ function toggleTag(elemento, id) {
     setStatus("Enviando...");
 
     try {
-      const res = await fetch("http://127.0.0.1:8081/editor/book", {
-        method: "POST",
-        credentials: "include",
-        body: fd
-      });
+        const res = await fetch("http://127.0.0.1:8081/editor/book", {
+            method: "POST",
+            credentials: "include",
+            body: fd
+        });
 
-      const text = await res.text();
-
-      if (!res.ok) {
-        setStatus("Erro (" + res.status + "):\n" + text);
-        return;
-      }
-
-      setStatus("OK (" + res.status + "):\n" + text);
-      // opcional: redirecionar ou limpar
-      // window.location.href = "Home.html";
+        if (res.ok) {
+            // MOSTRAR MODAL DE SUCESSO
+            document.getElementById("successModal").style.display = "flex";
+        } else {
+            const errorText = await res.text();
+            alert("Falha na sincronização: " + errorText);
+        }
     } catch (err) {
-      setStatus("Falha de rede:\n" + String(err));
+        alert("Erro de rede. Verifique o servidor.");
     }
-  });
+});
 </script>
 
-</body>
 </html>

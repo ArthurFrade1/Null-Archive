@@ -3,22 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Gerenciar Livros</title>
-    <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="Header.css">
+  <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="central.css">
+
 </head>
 <body>
-  <a href="Home.html">Voltar</a>
-  <h1>Gerenciar Livros</h1>
+    <header id="main-header" class="main-header"></header>
 
+    <div class="admin-container">
+        <header class="admin-page-header">
+            <div class="title-section">
+                <span class="admin-badge">Admin Mode</span>
+                <h1>Central de Acervo</h1>
+                <div class="title-underline"></div>
+            </div>
+            </header>
 
-  <main id="livros-grid" class="grid-container">
-  </main>
+        <main id="livros-grid" class="grid-container">
+            </main>
+    </div>
 
-</body>
+    <footer class="admin-footer">
+        <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso. 
+        Segurança e integridade garantidas pelo ecossistema <strong>NULL ARCHIVE</strong>.”</p>
+    </footer>
 
-<footer>
-  <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro.
-Não utilizamos cookies de rastreamento ou publicidade.”</p>
-</footer>
+    <script src="Header.js"></script>
+    </body>
 
 <script>
     async function atualizaBooks(){

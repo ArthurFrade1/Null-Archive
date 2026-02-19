@@ -3,30 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <title>Cadastro</title>
+    <link rel="stylesheet" href="Header.css">
     <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="login.css">
 </head>
+
 <body>
 
-<a href="loginUsuario.html">Login</a>
+<main class="login-viewport">
+    <div class="login-content">
+        <div class="logo-tech login-branding" onclick="window.location.href='Home.html'">
+            <span class="null-part">NULL</span>
+            <span class="archive-part">ARCHIVE</span>
+            <img src="../images/logo-icon.png" alt="Icon" class="logo-icon">
+        </div>
 
-<h2>Cadastre-se</h2>
+        <div class="login-interface">
+            <form id="registerForm">
+                <div class="field-wrap">
+                    <input type="text" name="username" id="username" placeholder="NOME DE USUÁRIO" required>
+                    <div class="field-line"></div>
+                </div>
 
-<form id="registerForm">
-  <label for="username">Nome:</label>
-  <input id="username" type="text" name="username" required>
+                <div class="field-wrap">
+                    <input type="password" name="password" id="password" placeholder="SENHA" required>
+                    <div class="field-line"></div>
+                </div>
 
-  <label for="password" >Senha:</label>
-  <input id="password" type="password" name="password" required>
+                <div class="field-wrap">
+                    <input type="email" name="email" id="email" placeholder="E-MAIL" required>
+                    <div class="field-line"></div>
+                </div>
 
-  <label for="email" >E-mail:</label>
-  <input id="email" type="email" name="email" required>
-
-  <button type="submit">Cadastrar</button>
-</form>
-
+                <div class="actions-row">
+                    <button type="submit" class="nav-btn btn-login-ajustado">CADASTRAR</button>
+                    <a href="loginUsuario.html" class="link-secondary-tech">JÁ TEM CONTA? FAÇA O LOGIN</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
 
 </body>
 </html>
+
+<script src="Header.js"></script>
 
 <script>
 document.getElementById("registerForm").addEventListener("submit", async function (e) {

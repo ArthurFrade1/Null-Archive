@@ -1,16 +1,258 @@
-.btn-tag {
-    padding: 8px 15px;
-    margin: 5px;
-    border: 1px solid #ccc;
-    background: #f0f0f0;
-    cursor: pointer;
-    border-radius: 20px;
+/* Container Principal */
+.admin-mode { 
+    min-height: 100vh; 
+    display: flex;
+    justify-content: center;
+    padding-top: 80px;
+}
+
+.form-container-tech {
+    width: 100%;
+    max-width: 900px;
+    padding: 0 40px;
+}
+
+/* Título e Badge */
+.admin-badge {
+    color: #baa8f8; /* Lilás do Archive */
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-header h1 {
+    color: #e0e6ed;
+    font-size: 2rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.title-underline {
+    width: 50px;
+    height: 3px;
+    background: #8da2fb;
+    margin-top: 10px;
+    margin-bottom: 40px;
+}
+
+/* Estilo dos Inputs (Igual ao Login) */
+.field-wrap {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.field-wrap input, 
+.field-wrap select, 
+.field-wrap textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #8da2fb;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* A LINHA QUE ESTAVA FALTANDO */
+.field-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(141, 162, 251, 0.2);
     transition: 0.3s;
 }
 
-/* Quando o JS adicionar essa classe, o estilo muda */
+.field-wrap input:focus ~ .field-line,
+.field-wrap select:focus ~ .field-line,
+.field-wrap textarea:focus ~ .field-line {
+    background: #8da2fb;
+    box-shadow: 0 0 8px rgba(141, 162, 251, 0.5);
+}
+
+/* Tags Estilo Home */
+.tag-section { margin: 30px 0; }
+.section-label {
+    color: rgba(224, 230, 237, 0.5);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.tag-wrapper { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Botão de Tag - Sincronizado com a Home */
+.btn-tag {
+    background: rgba(141, 162, 251, 0.1);
+    color: #8da2fb;
+    border: 1px solid rgba(141, 162, 251, 0.3);
+    padding: 6px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    transition: all 0.2s ease-in-out;
+    outline: none;
+}
+
+/* Efeito Hover (Exatamente igual à Home) */
+.btn-tag:hover {
+    background: #8da2fb;        /* Azul sólido */
+    color: #1a1025;             /* Texto escuro */
+    border-color: #8da2fb;
+    transform: translateY(-3px); /* Levanta a pílula */
+    box-shadow: 0 4px 10px rgba(141, 162, 251, 0.2);
+}
+
+/* Estado Selecionado (Trava o visual de hover) */
 .btn-tag.selecionado {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
+    background: #8da2fb;
+    color: #1a1025;
+    border-color: #8da2fb;
+    box-shadow: 0 2px 8px rgba(141, 162, 251, 0.4);
+    transform: translateY(0); /* Volta ao nível normal quando clicado */
+}
+
+/* Botão Enviar (Igual ao Login) */
+.btn-login-ajustado {
+    background: transparent;
+    border: 1px solid #8da2fb;
+    color: #8da2fb;
+    padding: 12px 40px;
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    margin-right: 20px;
+}
+
+.btn-login-ajustado:hover {
+    background: #8da2fb;
+    color: #0b1118;
+    box-shadow: 0 0 15px rgba(141, 162, 251, 0.4);
+}
+
+.link-secondary-tech {
+    background: transparent;
+    border: none;
+    color: rgba(224, 230, 237, 0.4);
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-decoration: underline;
+}
+
+/* Modal de Sucesso */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(11, 17, 24, 0.9);
+    display: none; justify-content: center; align-items: center; z-index: 9999;
+}
+
+.modal-content {
+    background: #141e2a;
+    padding: 40px;
+    border: 1px solid #8da2fb;
+    text-align: center;
+    border-radius: 4px;
+}
+
+/* Esconde o input original feio */
+.file-input-wrapper input[type="file"] {
+    display: none;
+}
+
+.file-input-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* O novo botão de upload */
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    cursor: pointer;
+    color: rgba(141, 162, 251, 0.7);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: 0.3s all;
+}
+
+.upload-icon {
+    font-size: 1.2rem;
+    color: #8da2fb;
+}
+
+.custom-file-upload:hover {
+    color: #8da2fb;
+    text-shadow: 0 0 10px rgba(141, 162, 251, 0.5);
+}
+
+/* Estilo quando um arquivo é selecionado */
+.file-selected .custom-file-upload {
+    color: #baa8f8; /* Muda para o lilás do Archive para indicar sucesso */
+}
+
+.file-selected .field-line {
+    background: #baa8f8;
+    box-shadow: 0 0 10px rgba(186, 168, 248, 0.4);
+}
+
+
+
+.actions-row {
+    display: flex;
+    flex-direction: column; /* Empilha os botões para um visual mais limpo */
+    align-items: center;    /* Centraliza na horizontal */
+    justify-content: center;
+    gap: 20px;              /* Espaço entre o botão Enviar e o Limpar */
+    margin-top: 40px;       /* Distância do formulário */
+    width: 100%;
+}
+
+/* Garante que o botão de envio siga o padrão do login mas centralizado */
+.actions-row .nav-btn {
+    width: 100%;
+    max-width: 250px;       /* Largura confortável para o botão central */
+    background: rgba(141, 162, 251, 0.1);
+    color: #8da2fb;
+    border: 1px solid #8da2fb;
+    padding: 12px 30px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.actions-row .nav-btn:hover {
+    background: #8da2fb;
+    color: #1a2a44;
+    box-shadow: 0 0 15px rgba(141, 162, 251, 0.4);
+}
+
+.link-secondary-tech {
+    background: transparent;
+    border: none;
+    color: rgba(224, 230, 237, 0.4);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.link-secondary-tech:hover {
+    color: #fff;
 }

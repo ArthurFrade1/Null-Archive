@@ -52,7 +52,7 @@ async function loadBookDetails() {
             const account = await adminRes.json();
             
             if (account.role === "ADMIN") {
-                document.getElementById('admin-actions').style.display = 'block';
+                document.getElementById('admin-decision').style.display = 'block';
                 
                 // Configura as funções de clique dos botões admin
                 document.getElementById('btn-approve').onclick = () => moderarLivro(bookId, 'approve');
@@ -60,13 +60,11 @@ async function loadBookDetails() {
             }
         }
 
-        // Mostrar conteúdo e esconder o loading
-        document.getElementById('loading').style.display = 'none';
+
         document.getElementById('book-content').style.display = 'grid';
 
     } catch (err) {
         console.error("Erro ao carregar:", err);
-        document.getElementById('loading').innerText = "ERRO AO CONECTAR AO BANCO DE DADOS.";
     }
 }
 

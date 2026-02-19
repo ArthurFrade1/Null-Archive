@@ -1,3 +1,5 @@
+
+
 body {
     margin: 0;
     padding: 0;
@@ -228,38 +230,215 @@ body {
     border-bottom: 1px solid rgba(20, 33, 49, 0.1); 
     padding-bottom: 0;       /* Removi o padding para a linha de active encostar na borda */
 }
+.view-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
 
 .tab-btn {
     background: none;
     border: none;
     font-family: inherit;
-    font-size: 0.85rem;
-    color: #888;
+    font-size: 0.75rem; /* Menor e mais elegante */
+    color: #8da2fb;     /* Azul padrão do seu tema */
+    opacity: 0.5;       /* Estado desativado é suave */
     cursor: pointer;
-    padding: 12px 5px;       /* Ajuste para o clique ser mais fácil */
+    padding: 10px 5px;
     position: relative;
     transition: all 0.3s ease;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;           /* Espaço entre ícone e texto */
+}
+/* Ícones dentro das abas (Estado Inativo) */
+.tab-icon {
+    width: 14px;
+    height: 14px;
+    /* Removemos o grayscale e usamos apenas opacidade */
+    opacity: 0.3; 
+    /* Um leve brilho azul para não parecer cinza morto */
+    filter: drop-shadow(0 0 2px rgba(141, 162, 251, 0.4)); 
+    transition: all 0.3s ease;
 }
 
-.tab-btn:hover {
-    color: #142131;
+/* Quando passamos o mouse, ele acende um pouco mais */
+.tab-btn:hover .tab-icon {
+    opacity: 0.6;
+}
+
+/* ESTADO ATIVO: O ícone acende totalmente */
+.tab-btn.active .tab-icon {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(141, 162, 251, 0.8)); /* Glow de ativo */
+}
+
+/* Garantia para o texto acompanhar a lógica */
+.tab-btn {
+    color: #8da2fb;
+    opacity: 0.4; /* Texto também fica apagadinho */
+    transition: all 0.3s ease;
 }
 
 .tab-btn.active {
-    color: #193c66;
-
-    font-weight: 700;
+    opacity: 1; /* Texto acende totalmente */
 }
 
-/* A linha embaixo da aba ativa centralizada */
+/* A linha embaixo (Substituí por um detalhe mais soft) */
 .tab-btn.active::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: #142131;
+    left: 15%;
+    width: 70%;  /* Linha não ocupa o botão todo, fica mais elegante */
+    height: 2px;
+    background: #8da2fb;
+    box-shadow: 0 0 8px rgba(141, 162, 251, 0.6);
+    border-radius: 10px;
 }
+
+
+/* Base da pílula de filtro */
+.filter-pill {
+    background: rgba(141, 162, 251, 0.1);
+    color: #8da2fb;
+    border: 1px solid rgba(141, 162, 251, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out; /* Transição suave para cores e movimento */
+    margin: 5px;
+    display: inline-block;
+    outline: none;
+}
+
+/* Efeito Hover: Igual ao das tags dentro do card */
+.filter-pill:hover {
+    background: #8da2fb;        /* Fundo azul sólido */
+    color: #1a1025;             /* Letra escura (cor do seu tema) */
+    border-color: #8da2fb;
+    transform: translateY(-3px); /* Levanta um pouco mais para dar destaque */
+    box-shadow: 0 4px 10px rgba(141, 162, 251, 0.2);
+}
+
+/* Estado Ativa: Quando clicada, ela "trava" no visual de destaque */
+.filter-pill.active {
+    background: #8da2fb;
+    color: #1a1025;
+    border-color: #8da2fb;
+    box-shadow: 0 2px 8px rgba(141, 162, 251, 0.4);
+    transform: translateY(0); /* Quando ativa, ela volta ao nível normal ou pode ficar levemente abaixada */
+}
+
+.search-container {
+    width: 100%;
+    max-width: 800px; /* Largura ideal para não ocupar a tela toda */
+    margin: 20px auto 30px auto;
+    padding: 0 20px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(20, 33, 49, 0.4); /* Fundo escuro semi-transparente */
+    border: 1px solid rgba(141, 162, 251, 0.2);
+    border-radius: 50px; /* Bordas arredondadas para combinar com as tags */
+    padding: 5px 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Efeito de foco: a barra brilha quando você clica */
+.search-box:focus-within {
+    border-color: #8da2fb;
+    box-shadow: 0 0 15px rgba(141, 162, 251, 0.3);
+    background: rgba(20, 33, 49, 0.7);
+}
+
+.search-icon {
+    color: #8da2fb;
+    font-size: 1.2rem;
+    margin-right: 12px;
+    font-weight: bold;
+    display: inline-block;
+    /* Rotaciona para o cabinho ficar para baixo na direita */
+    transform: rotate(355deg); 
+}
+
+#search-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding: 12px 0;
+}
+
+#search-input::placeholder {
+    color: rgba(141, 162, 251, 0.5);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+#clear-search {
+    background: none;
+    border: none;
+    color: rgba(141, 162, 251, 0.5);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    display: none; /* Só aparece quando tem texto */
+}
+
+#clear-search:hover {
+    color: #8da2fb;
+}
+
+/* Container que envolve a lista de tags */
+.filter-tags {
+    width: 100%;
+    max-width: 1250px;    /* Impede que a nuvem fique larga demais em telas gigantes */
+    margin: 0 auto;      /* Centraliza o bloco na página */
+    padding: 0 20px;     /* Respiro lateral */
+    text-align: center;  /* Alinha os botões no centro */
+}
+
+/* A div interna onde o JS injeta os botões */
+#container-tags {
+    display: flex;
+    flex-wrap: wrap;     /* Permite que as tags pulem para a linha de baixo */
+    justify-content: center; /* Centraliza as pílulas */
+    gap: 8px;            /* Espaço uniforme entre cada tag */
+    margin-bottom: 30px; /* Afasta as tags do grid de livros */
+}
+
+footer {
+    width: 100%;
+    margin-top: 10px;
+    padding: 40px 20px;
+    text-align: center; /* Centraliza o texto */
+}
+
+footer p {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 5pxm;
+    color: rgba(141, 162, 251, 0.5); /* Azul translúcido */
+    max-width: 600px;
+    margin: 0 auto; /* Centraliza o bloco do parágrafo */
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+}
+
