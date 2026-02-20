@@ -21,7 +21,7 @@ public class CorsUtil {
     }
 
     private static boolean isAllowedDevOrigin(String origin) {
-        return origin.equals("http://192.168.1.2:5500")
+        return origin.equals("http://191.42.161.173:5500")
             || origin.equals("http://localhost:5500")
             || origin.startsWith("http://192.168.")
             || origin.startsWith("http://10.")

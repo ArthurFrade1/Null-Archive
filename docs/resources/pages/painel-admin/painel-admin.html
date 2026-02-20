@@ -37,7 +37,7 @@
     async function atualizaBooks(){
       const grid = document.getElementById('livros-grid');
 
-      const res = await fetch(`http://192.168.1.2:8081/search/books?admin`, {
+      const res = await fetch(`http://191.42.161.173:8081/search/books?admin`, {
         credentials: "include"
       });
       
@@ -50,7 +50,7 @@
         card.className = 'book-card';
     
         const coverUrl = book.storage_path_image 
-            ? `http://192.168.1.2:8081/user/image/${book.storage_path_image}` 
+            ? `http://191.42.161.173:8081/user/image/${book.storage_path_image}` 
             : 'placeholder.png';
     
             // Gerar o HTML das tags dinamicamente
