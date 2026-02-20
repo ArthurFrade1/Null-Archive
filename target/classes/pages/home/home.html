@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Home | NullArchive</title>
+  <link rel="stylesheet" href="../../assets/css/estilo.css">
+  <link rel="stylesheet" href="../../assets/css/header.css">
+  <link rel="icon" type="image/x-icon" href="../../assets/img/icon-png.png">
+</head>
+<body>
+
+<header id="main-header" class="main-header"></header>
+
+  <main>
+    <div class="view-tabs">
+      <button class="tab-btn active" data-view="catalog">
+          Catálogo
+      </button>
+      <button class="tab-btn" data-view="favorites">
+          <img src="../../assets/img/star-filled.png" class="tab-icon" alt="Favoritos"> 
+          Meus Favoritos
+      </button>
+      <button class="tab-btn" data-view="openbooks">
+          <img src="../../assets/img/bookmark.png" class="tab-icon" alt="Bancada"> 
+          Na Bancada
+      </button>
+    </div>
+
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search-input" placeholder="BUSCAR POR TÍTULO OU AUTOR..." autocomplete="off">
+          <button id="clear-search" title="Limpar busca">×</button>
+        </div>
+    </div>
+  
+      <div class="filter-tags">
+          <div id="container-tags" class="tag-wrapper"></div>
+      </div>
+      
+      
+    </div>
+  <div id="livros-grid" class="grid-container"></div>
+  </main>
+
+
+</body>
+
+<footer>
+    <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso, mesmo sem cadastro. 
+    <br>Não utilizamos cookies de rastreamento ou publicidade.”</p>
+</footer>
+
+  <script src="../../js/header.js"></script>
+
+<script>
+
+  const searchInput = document.getElementById('search-input');
+const clearBtn = document.getElementById('clear-search');
+
+searchInput.addEventListener('input', () => {
+    // Mostra o botão X se houver texto
+    clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+});
+
+clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchInput.focus();
+    
+    // Dispare aqui a sua função de busca para resetar o grid!
+    filtrarLivros(); 
+});
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active de todos e adiciona no clicado
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        abaAtiva = document.querySelector('.tab-btn.active').dataset.view; //Retorna modo: 'catalog', 'favorites' ou 'openbooks'
+
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+    });
+});
+
+  async function toggleFavorite(event, bookId) {
+    event.stopPropagation(); // Impede que o clique abra o livro se o card for clicável
+    
+    const starImg = event.currentTarget.querySelector('.star-icon');
+    const isFavorite = starImg.classList.contains('active');
+    const container = event.currentTarget;
+    // 1. Toca a imagem visualmente na hora (Feedback rápido pro usuário)
+    if (isFavorite) {
+        starImg.src = '../../assets/img/star-empty.png';
+        starImg.classList.remove('active');
+    } else {
+        starImg.src = '../../assets/img/star-filled.png';
+        starImg.classList.add('active');
+    }
+
+    container.setAttribute('data-tooltip', !isFavorite ? 'Desfavoritar' : 'Favoritar');
+
+    // 2. Envia para o seu Handler no Java
+    try {
+        const data = {
+        is_fav: isFavorite?false:true,
+        book_id: bookId,
+    };
+
+    const response = await fetch("http://192.168.1.2:8081/user/favorite", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify(data)
+    });
+
+
+    } catch (err) {
+        console.error("Erro ao salvar favorito:", err);
+    }
+}
+
+  let tagsSelecionadas = [];
+  async function loadTags() {
+    const res = await fetch("http://192.168.1.2:8081/editor/tags", {
+      credentials: "include"
+    });
+    
+    if (!res.ok) {
+      return;
+    }
+    
+    const container = document.getElementById("container-tags");
+
+    const data = await res.json();
+
+    // Limpa o container antes de carregar (caso a função seja chamada mais de uma vez)
+      //container.innerHTML = '';
+
+      // --- O PULO DO GATO ESTÁ AQUI ---
+      // Percorremos cada item (tag) dentro do array 'data'
+      data.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerText = tag.nome;
+        
+        // Mudamos para a nova classe de filtro
+        btn.classList.add('filter-pill'); 
+
+        btn.addEventListener('click', () => {
+            // Garanta que dentro da função toggleTag você faça: btn.classList.toggle('active');
+            toggleTag(btn, tag.id);
+        });
+
+        container.appendChild(btn);
+    });
+      
+      
+    }
+
+    let abaAtiva = 'all';
+
+    async function toggleTag(elemento, id) {
+
+  
+      if (tagsSelecionadas.includes(id)) {
+          // Se já está no array, remove (desmarcar)
+          tagsSelecionadas = tagsSelecionadas.filter(item => item !== id);
+          elemento.classList.remove('active');
+  
+      } else {
+        // Se não está, adiciona (marcar)
+        if(tagsSelecionadas.length<3){
+          tagsSelecionadas.push(id);
+          elemento.classList.add('active');
+  
+        }
+      }
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+            
+  
+    }
+
+    function reescreveTela(data){
+
+            const grid = document.getElementById('livros-grid');
+
+            grid.innerHTML = '';
+      
+            data.forEach(book => {
+              const card = document.createElement('div');
+              card.className = 'book-card';
+          
+              const coverUrl = book.storage_path_image 
+                  ? `http://192.168.1.2:8081/user/image/${book.storage_path_image}` 
+                  : 'placeholder.png';
+          
+                  // Gerar o HTML das tags dinamicamente
+                // Pegamos apenas as 3 primeiras (slice) caso o back mande mais por erro
+          
+                let tagsArray = [];
+          
+                if (book.tags) {
+                    if (Array.isArray(book.tags)) {
+                        // Se já for um array (veio tratado do Java)
+                        tagsArray = book.tags;
+                    } else if (typeof book.tags === 'string') {
+                        // Se veio como string "terror,fantasia", transforma em array
+                        tagsArray = book.tags.split(',');
+                    }
+                }
+          
+                const tagsHtml = tagsArray
+                    .slice(0, 3) 
+                    .map(tag => `<span class="tag-pill">${tag.trim()}</span>`)
+                    .join('');
+          
+                    
+              card.innerHTML = `
+              <div class="card-cover">
+                  <img src="${coverUrl}" alt="Capa de ${book.title}">
+                  ${book.keepreading === true ? `
+                      <div class="btn-fav">
+                          <img src="../../assets/img/bookmark.png" class="fav-icon" alt="Lido">
+                      </div>
+                  ` : ''}
+              </div>
+              
+              <div class="card-info">
+                  <div class="card-header">
+                      <h3 class="book-title">${book.title}</h3>
+                      <div class="star-container tooltip-container" 
+                          data-tooltip="${book.favorite ? 'Desfavoritar' : 'Favoritar'}" 
+                          onclick="toggleFavorite(event, ${book.id})">
+                          <img src="${book.favorite ? '../../assets/img/star-filled.png' : '../../assets/img/star-empty.png'}" 
+                              class="star-icon ${book.favorite ? 'active' : ''}" 
+                              alt="Estrela de Favorito">
+                      </div>
+                  </div>
+                  <span class="book-author">${book.author_name || 'Autor desconhecido'}</span>
+                  
+                  <div class="card-tags">
+                      ${tagsHtml}
+                  </div>
+              </div>
+          `;
+          
+              card.addEventListener('click', () => {
+                  window.location.href = `../visualizar-livro/visualizar-livro.html?id=${book.id}`;
+              });
+          
+              grid.appendChild(card);
+          });
+
+    }
+    
+  async function updateCatalog(tagsSelecionadas){
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://192.168.1.2:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}`, {
+        credentials: "include"
+      });
+
+      const data = await res.json();
+
+      reescreveTela(data)
+
+  }
+
+  async function updateOpenbooks(tagsSelecionadas){
+
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://192.168.1.2:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&openbooks`, {
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+        
+      const data = await res.json();
+      
+      reescreveTela(data)
+
+  }
+
+  async function updateFavorites(tagsSelecionadas){
+
+      const termo = document.getElementById('search-input').value;
+      
+      const tagsString = tagsSelecionadas.join(',');
+      
+      const res = await fetch(`http://192.168.1.2:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&favorites`, {
+        credentials: "include"
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+        
+      const data = await res.json();
+
+      reescreveTela(data)
+
+  }
+
+
+  async function loadUserToken() {
+    const res = await fetch("http://192.168.1.2:8081/user/token", {
+      method: "POST",
+      credentials: "include"
+    });
+  }
+  
+  
+  
+
+  let debounceTimer;
+
+  const inputBusca = document.getElementById('search-input');
+
+  inputBusca.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+          // Chamamos a mesma função que as tags usam, 
+          // mas agora ela vai ler o input também
+        if(abaAtiva == 'catalog')
+          updateCatalog(tagsSelecionadas);
+        if(abaAtiva == 'favorites')
+          updateFavorites(tagsSelecionadas);
+        if(abaAtiva == 'openbooks')
+          updateOpenbooks(tagsSelecionadas);
+      }, 300); // 300ms de debounce
+  });
+  
+  abaAtiva = 'catalog';
+  loadTags()
+  loadUserToken();
+  loadData();
+  updateCatalog([]);
+
+  </script>
+
+</html>
+

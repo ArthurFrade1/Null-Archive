@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visualizar Livro | NullArchive</title>
+    <link rel="stylesheet" href="../../assets/css/header.css">
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <link rel="stylesheet" href="visualizar-livro.css">
+    <link rel="icon" type="image/x-icon" href="../../assets/img/icon-png.png">
+
+</head>
+
+<body>
+    <header id="main-header" class="main-header"></header>
+
+    <div class="view-container" id="book-content">
+
+        <aside class="book-aside">
+            <img id="book-cover" src="" class="full-cover" alt="Capa">
+
+            <div class="uploader-info">
+                <span class="uploader-label">Fonte</span>
+                <div class="uploader-name">
+                    <span id="info-user">@admin</span>
+                </div>
+            </div>
+        </aside>
+        </aside>
+
+        <main class="book-main">
+            <h1 id="book-title" class="book-title">Título</h1>
+            <span id="book-author" class="author-sub">Autor</span>
+
+            <div id="book-tags" style="margin-bottom: 30px;"></div>
+            <div id="book-description" class="description-text"></div>
+
+            <div class="action-zone">
+                <button id="btn-download" class="nav-btn-livro">BAIXAR ARQUIVO</button>
+                <button id="btn-view" class="nav-btn-livro btn-secondary-outline">LER ONLINE</button>
+            </div>
+
+            <div class="specs-horizontal">
+                <div class="tech-box">
+                    <span class="tech-label">Dados técnicos</span>
+                    <p>IDIOMA: <span id="info-lang"></span></p>
+                    <p>ANO: <span id="info-year"></span></p>
+                    <p>LICENÇA: <span id="info-license"></span></p>
+                </div>
+
+                <div class="tech-box">
+                    <span class="tech-label">Especificações</span>
+                    <p>TIPO: <span id="info-kind"></span></p>
+                    <p>VOLUME: <span id="info-size"></span> MB</p>
+                    <p>INDEXADO: <span id="info-date"></span></p>
+                </div>
+
+                <div class="tech-box link-column">
+                    <span class="tech-label">Link Original</span>
+                    <a id="book-source" href="#" target="_blank" class="source-link"></a>
+                </div>
+            </div>
+
+
+
+            <div id="admin-decision" class="admin-panel" style="display: none;">
+                <p class="moderacao">MODERAÇÃO</p>
+                <div class="admin-actions">
+                    <button id="btn-approve" class="nav-btn-livro">APROVAR</button>
+                    <button id="btn-reject" class="nav-btn-livro btn-secondary-outline">DESAPROVAR</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../js/header.js"></script>
+    <script src="visualizar-livro.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro | NullArchive</title>
+    <link rel="stylesheet" href="../../assets/css/header.css">
+    <link rel="stylesheet" href="../../assets/css/estilo.css">
+    <link rel="stylesheet" href="../login/login.css">
+    <link rel="icon" type="image/x-icon" href="../../assets/img/icon-png.png">
+
+</head>
+
+<body>
+
+<main class="login-viewport">
+    <div class="login-content">
+        <div class="logo-tech login-branding" onclick="window.location.href='../home/home.html'">
+            <span class="null-part">NULL</span>
+            <span class="archive-part">ARCHIVE</span>
+            <img src="../../assets/img/logo-icon.png" alt="Icon" class="logo-icon">
+        </div>
+
+        <div class="login-interface">
+            <form id="registerForm">
+                <div class="field-wrap">
+                    <input type="text" name="username" id="username" placeholder="NOME DE USUÁRIO" required>
+                    <div class="field-line"></div>
+                </div>
+
+                <div class="field-wrap">
+                    <input type="password" name="password" id="password" placeholder="SENHA" required>
+                    <div class="field-line"></div>
+                </div>
+
+                <div class="field-wrap">
+                    <input type="email" name="email" id="email" placeholder="E-MAIL" required>
+                    <div class="field-line"></div>
+                </div>
+
+                <div class="actions-row">
+                    <button type="submit" class="nav-btn btn-login-ajustado">CADASTRAR</button>
+                    <a href="../login/login.html" class="link-secondary-tech">JÁ TEM CONTA? FAÇA O LOGIN</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault(); // 🚫 impede o submit padrão
+
+    const form = e.target;
+
+    const data = {
+        username: form.username.value,
+        password: form.password.value,
+        email: form.email.value
+    };
+
+    const response = await fetch("http://192.168.1.2:8081/editor/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+        alert("Usuário criado com sucesso!");
+        window.location.href = "../login/login.html";
+    } else {
+        const text = await response.text();
+        alert("Erro: " + text);
+    }
+});
+</script>
+
