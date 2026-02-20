@@ -32,7 +32,7 @@
   document.getElementById("logout").addEventListener("click", async function (e) {
       e.preventDefault(); // 🚫 impede o submit padrão
       
-      const res = await fetch("http://192.168.1.2:8081/editor/logout", {
+      const res = await fetch("http://127.0.0.1:8081/editor/logout", {
         method: "POST",
         credentials: "include",
         
@@ -48,7 +48,7 @@
     
 
   async function loadData() {
-    const res = await fetch("http://192.168.1.2:8081/editor/data", {
+    const res = await fetch("http://127.0.0.1:8081/editor/data", {
       credentials: "include"
     });
     
