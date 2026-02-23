@@ -10,7 +10,7 @@ async function loadBookDetails() {
     }
 
     try {
-        const res = await fetch(`http://191.42.161.173:8081/book/info?id=${bookId}`, { credentials: "include" });
+        const res = await fetch(`http://127.0.0.1:80/book/info?id=${bookId}`, { credentials: "include" });
         book = await res.json();
 
         // Populando dados
@@ -29,7 +29,7 @@ async function loadBookDetails() {
         document.getElementById('book-source').href = book.source_url;
 
         // Cover
-        document.getElementById('book-cover').src = `http://191.42.161.173:8081/user/image/${book.storage_path_image}`;
+        document.getElementById('book-cover').src = `http://127.0.0.1:80/user/image/${book.storage_path_image}`;
 
         // Tags
         const tagsContainer = document.getElementById('book-tags');
@@ -42,7 +42,7 @@ async function loadBookDetails() {
 
         // Admin Check
         if (urlParams.has('admin')) {
-            const adminRes = await fetch('http://191.42.161.173:8081/editor/data', { credentials: "include" });
+            const adminRes = await fetch('http://127.0.0.1:80/editor/data', { credentials: "include" });
             const account = await adminRes.json();
             if (account.role === "ADMIN") {
                 document.getElementById('admin-decision').style.display = 'block';
@@ -59,7 +59,7 @@ async function loadBookDetails() {
 }
 
 function baixarArquivo(storage_path_file, original_filename) {
-    const url = `http://localhost:8081/book/file/${storage_path_file}?action=download&name=${encodeURIComponent(original_filename)}`;
+    const url = `http://localhost:80/book/file/${storage_path_file}?action=download&name=${encodeURIComponent(original_filename)}`;
     const a = document.createElement('a');
     a.href = url;
     a.download = original_filename;
@@ -67,22 +67,22 @@ function baixarArquivo(storage_path_file, original_filename) {
 }
 
 async function lerArquivo(storage_path_file) {
-    await fetch('http://191.42.161.173:8081/user/reading', {
+    await fetch('http://127.0.0.1:80/user/reading', {
         method: 'POST', credentials: "include",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_id: book.id })
     });
-    window.open(`http://localhost:8081/book/file/${storage_path_file}?action=view`, '_blank');
+    window.open(`http://localhost:80/book/file/${storage_path_file}?action=view`, '_blank');
 }
 
 async function moderarLivro(id, acao) {
     if (!confirm(`Deseja executar a ação: ${acao}?`)) return;
-    const response = await fetch('http://191.42.161.173:8081/admin/approve', {
+    const response = await fetch('http://127.0.0.1:80/admin/approve', {
         method: 'POST', credentials: "include",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id, action: acao })
     });
-    if (response.ok) { window.location.href = "../painel-admin/painel-admin.html"; }
+    if (response.ok) { window.location.href = "/curadoria"; }
 }
 
 loadBookDetails();

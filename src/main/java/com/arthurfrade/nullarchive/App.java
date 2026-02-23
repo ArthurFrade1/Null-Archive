@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        int port = 8081;
+        int port = 80;
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
@@ -42,6 +42,19 @@ public class App {
         server.createContext("/user/reading",      new UserReadingHandler(repo));     //GET /editor/logout
         server.createContext("/user/favorite",     new UserFavoriteHandler(repo));     //POST /user/favorite
 
+        // Caminho para a pasta onde estão seus arquivos (ajuste conforme sua estrutura)
+        String staticFilesPath = "src/main/resources"; 
+
+        // Servir a Home na URL limpa http://localhost:80/home
+        server.createContext("/home", new StaticFileHandler(staticFilesPath));
+        server.createContext("/livro", new StaticFileHandler(staticFilesPath));
+        server.createContext("/login", new StaticFileHandler(staticFilesPath));
+        server.createContext("/cadastro", new StaticFileHandler(staticFilesPath));
+        server.createContext("/publicar", new StaticFileHandler(staticFilesPath));
+        server.createContext("/curadoria", new StaticFileHandler(staticFilesPath));
+
+        // Servir os recursos globais (CSS, JS, Imagens) e o restante do site
+        server.createContext("/", new StaticFileHandler(staticFilesPath));
         server.setExecutor(null);
         server.start();
 

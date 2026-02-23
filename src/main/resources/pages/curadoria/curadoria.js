@@ -1,43 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Painel Admin | NullArchive</title>
-  <link rel="stylesheet" href="../../assets/css/header.css">
-  <link rel="stylesheet" href="../../assets/css/estilo.css">
-  <link rel="stylesheet" href="painel-admin.css">
-<link rel="icon" type="image/x-icon" href="../../assets/img/icon-png.png">
-
-
-</head>
-<body>
-    <header id="main-header" class="main-header"></header>
-
-    <div class="admin-container">
-        <header class="admin-page-header">
-            <div class="title-section">
-                <h1>Painel Admin</h1>
-                <div class="title-underline"></div>
-            </div>
-            </header>
-
-        <main id="livros-grid" class="grid-container">
-            </main>
-    </div>
-
-    <footer class="admin-footer">
-        <p>“Este site utiliza cookies estritamente necessários para salvar preferências de leitura e progresso. 
-        Segurança e integridade garantidas pelo ecossistema <strong>NULL ARCHIVE</strong>.”</p>
-    </footer>
-
-    <script src="../../js/header.js"></script>
-    </body>
-
-<script>
-    async function atualizaBooks(){
+async function atualizaBooks(){
       const grid = document.getElementById('livros-grid');
 
-      const res = await fetch(`http://191.42.161.173:8081/search/books?admin`, {
+      const res = await fetch(`http://127.0.0.1:80/search/books?admin`, {
         credentials: "include"
       });
       
@@ -50,7 +14,7 @@
         card.className = 'book-card';
     
         const coverUrl = book.storage_path_image 
-            ? `http://191.42.161.173:8081/user/image/${book.storage_path_image}` 
+            ? `http://127.0.0.1:80/user/image/${book.storage_path_image}` 
             : 'placeholder.png';
     
             // Gerar o HTML das tags dinamicamente
@@ -89,13 +53,10 @@
         `;
     
         card.addEventListener('click', () => {
-            window.location.href = `../visualizar-livro/visualizar-livro.html?id=${book.id}&admin`;
+            window.location.href = `/livro?id=${book.id}&admin`;
         });
     
         grid.appendChild(card);
       });
     }
     atualizaBooks();
-</script>
-</html>
-

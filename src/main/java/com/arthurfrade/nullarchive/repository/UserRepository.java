@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.dto.AuthenticatedUserRequest;
 
@@ -28,7 +27,7 @@ public class UserRepository{
     public UserRepository(){
         Properties props = new Properties();
         try{
-            InputStream in = getClass().getResourceAsStream("db_service.properties");
+            InputStream in = getClass().getResourceAsStream("db.properties");
             if(in == null){
                 throw new NullPointerException("Could not find properties");}
                 props.load(in);

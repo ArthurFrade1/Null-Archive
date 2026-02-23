@@ -114,7 +114,7 @@ clearBtn.addEventListener('click', () => {
         book_id: bookId,
     };
 
-    const response = await fetch("http://191.42.161.173:8081/user/favorite", {
+    const response = await fetch("http://127.0.0.1:80/user/favorite", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -131,7 +131,7 @@ clearBtn.addEventListener('click', () => {
 
   let tagsSelecionadas = [];
   async function loadTags() {
-    const res = await fetch("http://191.42.161.173:8081/editor/tags", {
+    const res = await fetch("http://127.0.0.1:80/editor/tags", {
       credentials: "include"
     });
     
@@ -206,7 +206,7 @@ clearBtn.addEventListener('click', () => {
               card.className = 'book-card';
           
               const coverUrl = book.storage_path_image 
-                  ? `http://191.42.161.173:8081/user/image/${book.storage_path_image}` 
+                  ? `http://127.0.0.1:80/user/image/${book.storage_path_image}` 
                   : 'placeholder.png';
           
                   // Gerar o HTML das tags dinamicamente
@@ -260,7 +260,7 @@ clearBtn.addEventListener('click', () => {
           `;
           
               card.addEventListener('click', () => {
-                  window.location.href = `../visualizar-livro/visualizar-livro.html?id=${book.id}`;
+                  window.location.href = `/livro?id=${book.id}`;
               });
           
               grid.appendChild(card);
@@ -273,7 +273,7 @@ clearBtn.addEventListener('click', () => {
       
       const tagsString = tagsSelecionadas.join(',');
       
-      const res = await fetch(`http://191.42.161.173:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}`, {
+      const res = await fetch(`http://127.0.0.1:80/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}`, {
         credentials: "include"
       });
 
@@ -289,7 +289,7 @@ clearBtn.addEventListener('click', () => {
       
       const tagsString = tagsSelecionadas.join(',');
       
-      const res = await fetch(`http://191.42.161.173:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&openbooks`, {
+      const res = await fetch(`http://127.0.0.1:80/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&openbooks`, {
         credentials: "include"
       });
       
@@ -309,7 +309,7 @@ clearBtn.addEventListener('click', () => {
       
       const tagsString = tagsSelecionadas.join(',');
       
-      const res = await fetch(`http://191.42.161.173:8081/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&favorites`, {
+      const res = await fetch(`http://127.0.0.1:80/search/books?tags=${encodeURIComponent(tagsString)}&q=${encodeURIComponent(termo)}&favorites`, {
         credentials: "include"
       });
       
@@ -325,7 +325,7 @@ clearBtn.addEventListener('click', () => {
 
 
   async function loadUserToken() {
-    const res = await fetch("http://191.42.161.173:8081/user/token", {
+    const res = await fetch("http://127.0.0.1:80/user/token", {
       method: "POST",
       credentials: "include"
     });

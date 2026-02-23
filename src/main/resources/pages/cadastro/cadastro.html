@@ -5,7 +5,7 @@
     <title>Cadastro | NullArchive</title>
     <link rel="stylesheet" href="../../assets/css/header.css">
     <link rel="stylesheet" href="../../assets/css/estilo.css">
-    <link rel="stylesheet" href="../login/login.css">
+    <link rel="stylesheet" href="pages/login/login.css">
     <link rel="icon" type="image/x-icon" href="../../assets/img/icon-png.png">
 
 </head>
@@ -14,7 +14,7 @@
 
 <main class="login-viewport">
     <div class="login-content">
-        <div class="logo-tech login-branding" onclick="window.location.href='../home/home.html'">
+        <div class="logo-tech login-branding" onclick="window.location.href='home'">
             <span class="null-part">NULL</span>
             <span class="archive-part">ARCHIVE</span>
             <img src="../../assets/img/logo-icon.png" alt="Icon" class="logo-icon">
@@ -39,43 +39,13 @@
 
                 <div class="actions-row">
                     <button type="submit" class="nav-btn btn-login-ajustado">CADASTRAR</button>
-                    <a href="../login/login.html" class="link-secondary-tech">JÁ TEM CONTA? FAÇA O LOGIN</a>
+                    <a href="/login" class="link-secondary-tech">JÁ TEM CONTA? FAÇA O LOGIN</a>
                 </div>
             </form>
         </div>
     </div>
 </main>
-
+    <script src="pages/cadastro/cadastro.js"></script>
 </body>
 </html>
-
-<script>
-document.getElementById("registerForm").addEventListener("submit", async function (e) {
-    e.preventDefault(); // 🚫 impede o submit padrão
-
-    const form = e.target;
-
-    const data = {
-        username: form.username.value,
-        password: form.password.value,
-        email: form.email.value
-    };
-
-    const response = await fetch("http://191.42.161.173:8081/editor/register", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    });
-
-    if (response.ok) {
-        alert("Usuário criado com sucesso!");
-        window.location.href = "../login/login.html";
-    } else {
-        const text = await response.text();
-        alert("Erro: " + text);
-    }
-});
-</script>
 
