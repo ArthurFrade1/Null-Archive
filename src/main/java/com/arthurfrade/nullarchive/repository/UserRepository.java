@@ -1,5 +1,7 @@
 package com.arthurfrade.nullarchive.repository;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,17 +13,36 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
 import com.arthurfrade.nullarchive.dto.UserSessionData;
 import com.arthurfrade.nullarchive.dto.AuthenticatedUserRequest;
 
 public class UserRepository{
 
     // 1) Dados de conexão
-// Adicione o trecho após o nome do seu banco de dados
-    private static final String URL = "jdbc:mysql://localhost:3306/nullarchive?allowPublicKeyRetrieval=true&useSSL=false";
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
 
-    private static final String USER = "root";        // ou seu usuário
-    private static final String PASSWORD = "LB6p2ozMhBUM7MTMDUKCU&vK3";
+    public UserRepository(){
+        Properties props = new Properties();
+        try{
+            InputStream in = getClass().getResourceAsStream("db_service.properties");
+            if(in == null){
+                throw new NullPointerException("Could not find properties");}
+                props.load(in);
+            }
+        catch(IOException e){
+            throw new RuntimeException(
+                "Error"
+            );
+        }
+        URL = props.getProperty("DB_URL");
+        USER = props.getProperty("DB_USER");
+        PASSWORD = props.getProperty("DB_PASSWORD");
+
+    }
 
     public void createEditor(String username, String password_hash, String email) throws SQLIntegrityConstraintViolationException, SQLException {
 

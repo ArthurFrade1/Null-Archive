@@ -23,7 +23,7 @@
         <div class="login-interface">
             <form id="registerForm">
                 <div class="field-wrap">
-                    <input type="text" name="username" id="username" placeholder="NOME DE USUÁRIO" required>
+                    <input type="text" name="username" id="username" placeholder="NICKNAME" required>
                     <div class="field-line"></div>
                 </div>
 
@@ -61,7 +61,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         email: form.email.value
     };
 
-    const response = await fetch("http://127.0.0.1:8081/editor/register", {
+    const response = await fetch("http://191.42.161.173:8081/editor/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

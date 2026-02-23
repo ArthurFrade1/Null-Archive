@@ -145,7 +145,7 @@
     let tagsSelecionadas = []; // Array para guardar os IDs
 
     async function loadTags() {
-        const res = await fetch("http://127.0.0.1:8081/editor/tags", {
+        const res = await fetch("http://191.42.161.173:8081/editor/tags", {
             credentials: "include"
         });
 
@@ -277,7 +277,7 @@
         setStatus("Enviando...");
 
         try {
-            const res = await fetch("http://127.0.0.1:8081/editor/book", {
+            const res = await fetch("http://191.42.161.173:8081/editor/book", {
                 method: "POST",
                 credentials: "include",
                 body: fd
